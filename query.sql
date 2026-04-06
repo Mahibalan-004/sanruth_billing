@@ -1,3 +1,4 @@
+
 CREATE TABLE `customer` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `active` bit(1) NOT NULL,
