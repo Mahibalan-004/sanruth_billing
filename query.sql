@@ -180,3 +180,137 @@ CREATE TABLE `stock` (
     CONSTRAINT `FKeifebnupfgukc2oojtse960ii` FOREIGN KEY (`purchaseItem`) REFERENCES `purchaseitems` (`id`),
     CONSTRAINT `FKh2407ud8pbmwnxo4q65xftumf` FOREIGN KEY (`model`) REFERENCES `model` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32;
+
+CREATE TABLE `sales` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `createdBy` varchar(255) DEFAULT NULL,
+  `createdOn` datetime(6) DEFAULT NULL,
+  `modifiedBy` varchar(255) DEFAULT NULL,
+  `modifiedOn` datetime(6) DEFAULT NULL,
+  `actualAmountSum` float NOT NULL,
+  `orderDate` date DEFAULT NULL,
+  `orderNo` varchar(255) DEFAULT NULL,
+  `orderStatus` varchar(255) DEFAULT NULL,
+  `paidAmountSum` float NOT NULL,
+  `customer` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKt3sxcyawyfdjcr7wanolo98so` (`customer`),
+  CONSTRAINT `FKt3sxcyawyfdjcr7wanolo98so` FOREIGN KEY (`customer`) REFERENCES `customer` (`id`)
+
+CREATE TABLE `sales_items` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `salesId` bigint NOT NULL,
+  `itemName` varchar(255) DEFAULT NULL,
+  `barcode` varchar(255) DEFAULT NULL,
+  `serialNo` varchar(255) DEFAULT NULL,
+  `rackNo` varchar(255) DEFAULT NULL,
+  `quantity` int DEFAULT 1,
+  `pricePerQty` float DEFAULT 0,
+  `gstPercentage` float DEFAULT 0,
+  `totalPrice` float DEFAULT 0,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `FK_sales_items_sales` FOREIGN KEY (`salesId`) REFERENCES `sales` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf32;
+
+
+CREATE TABLE `salesitems` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `createdBy` varchar(255) DEFAULT NULL,
+  `createdOn` datetime(6) DEFAULT NULL,
+  `modifiedBy` varchar(255) DEFAULT NULL,
+  `modifiedOn` datetime(6) DEFAULT NULL,
+  `deleted` bit(1) NOT NULL,
+  `gstPercentage` float NOT NULL,
+  `gstValue` float NOT NULL,
+  `itemName` varchar(255) DEFAULT NULL,
+  `pricePerQty` float NOT NULL,
+  `quantity` int NOT NULL,
+  `serialNo` varchar(255) DEFAULT NULL,
+  `totalPrice` float NOT NULL,
+  `machine` bigint DEFAULT NULL,
+  `spare` bigint DEFAULT NULL,
+  `stock` varchar(255) DEFAULT NULL,
+  `sales` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKjnb1apgqbbekyalao9g0k39xy` (`machine`),
+  KEY `FKgiesap1p06s6juylbni1rqnb0` (`spare`),
+  KEY `FKp2olmuodj2he18veht4qj1o6b` (`stock`),
+  KEY `FK3oqcphfy6eav6e7wtqnusgevt` (`sales`),
+  CONSTRAINT `FK3oqcphfy6eav6e7wtqnusgevt` FOREIGN KEY (`sales`) REFERENCES `sales` (`id`),
+  CONSTRAINT `FKgiesap1p06s6juylbni1rqnb0` FOREIGN KEY (`spare`) REFERENCES `spares` (`id`),
+  CONSTRAINT `FKjnb1apgqbbekyalao9g0k39xy` FOREIGN KEY (`machine`) REFERENCES `machine` (`id`),
+  CONSTRAINT `FKp2olmuodj2he18veht4qj1o6b` FOREIGN KEY (`stock`) REFERENCES `stock` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7835 DEFAULT CHARSET=utf32;
+
+CREATE TABLE `jobcard` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `createdBy` varchar(255) DEFAULT NULL,
+  `createdOn` datetime(6) DEFAULT NULL,
+  `modifiedBy` varchar(255) DEFAULT NULL,
+  `modifiedOn` datetime(6) DEFAULT NULL,
+  `actualAmountSum` float NOT NULL,
+  `cardNo` varchar(255) DEFAULT NULL,
+  `completed` bit(1) NOT NULL,
+  `completedDate` date DEFAULT NULL,
+  `delivered` bit(1) NOT NULL,
+  `deliveryDate` date DEFAULT NULL,
+  `givenDate` date DEFAULT NULL,
+  `jobCategory` varchar(255) DEFAULT NULL,
+  `jobStatus` varchar(255) DEFAULT NULL,
+  `laborCharge` float NOT NULL,
+  `quoteAmountSum` float NOT NULL,
+  `receivedAmountSum` float NOT NULL,
+  `customer` bigint DEFAULT NULL,
+  `employee` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKr7qhnw1v6mamxow90egb5fvkb` (`customer`),
+  KEY `FK5gaox2htdx5dlyfbmj34ysot1` (`employee`),
+  CONSTRAINT `FK5gaox2htdx5dlyfbmj34ysot1` FOREIGN KEY (`employee`) REFERENCES `employee` (`id`),
+  CONSTRAINT `FKr7qhnw1v6mamxow90egb5fvkb` FOREIGN KEY (`customer`) REFERENCES `customer` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2619 DEFAULT CHARSET=utf32;
+
+CREATE TABLE `employee` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `createdBy` varchar(255) DEFAULT NULL,
+  `createdOn` datetime(6) DEFAULT NULL,
+  `modifiedBy` varchar(255) DEFAULT NULL,
+  `modifiedOn` datetime(6) DEFAULT NULL,
+  `active` bit(1) NOT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `designation` varchar(255) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `empId` varchar(255) DEFAULT NULL,
+  `employmentType` varchar(255) DEFAULT NULL,
+  `exitDate` date DEFAULT NULL,
+  `gender` varchar(255) DEFAULT NULL,
+  `joinedDate` date DEFAULT NULL,
+  `line1` varchar(255) DEFAULT NULL,
+  `line2` varchar(255) DEFAULT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `phoneNo1` varchar(255) DEFAULT NULL,
+  `phoneNo2` varchar(255) DEFAULT NULL,
+  `zipCode` varchar(255) DEFAULT NULL,
+  `credential` bigint DEFAULT NULL,
+  `aadhaarNo` varchar(255) DEFAULT NULL,
+  `aadharCardPhoto` varchar(255) DEFAULT NULL,
+  `drivingLicence` varchar(255) DEFAULT NULL,
+  `drivingLicencePhoto` varchar(255) DEFAULT NULL,
+  `profilePhoto` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_1yxxakvyi7blmiydsg8415xwd` (`credential`),
+  CONSTRAINT `FK1c7h2omesuyjmly5k29regua` FOREIGN KEY (`credential`) REFERENCES `credential` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf32;
+
+
+CREATE TABLE `credential` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `createdBy` varchar(255) DEFAULT NULL,
+  `createdOn` datetime(6) DEFAULT NULL,
+  `modifiedBy` varchar(255) DEFAULT NULL,
+  `modifiedOn` datetime(6) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `role` varchar(255) DEFAULT NULL,
+  `username` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_p961pvq98pc0pkxa5qh22h7tp` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf32;
