@@ -2,6 +2,13 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Security Check: Redirect to login if user is not authenticated
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
@@ -418,8 +425,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <a href="../customers/c_list.php" <?php echo ($current_page == 'c_list.php') ? 'class="active-link"' : ''; ?>>
                         Customer List
                     </a>
-                    <a href="../customers/s_list.php" <?php echo ($current_page == 's_list.php') ? 'class="active-link"' : ''; ?>>
+                    <a href="../supplier/list.php" <?php echo ($current_page == 'list.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
                         Supplier List
+                    </a>
+                    <a href="../supplier/add.php" <?php echo ($current_page == 'add.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
+                        + Add Supplier
                     </a>
                 </div>
             </li>

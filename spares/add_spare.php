@@ -31,7 +31,7 @@
                 <button type="button" id="removeBtn" onclick="removeImage()" style="display:none; width:100%; margin-top:10px; padding:10px; border:none; border-radius:8px; background:#fee2e2; color:#ef4444; font-weight:700; font-size:13px; cursor:pointer;">Delete Image</button>
 
                 <!-- Hidden Inputs -->
-                <input type="file" name="image" id="img" accept="image/*" hidden onchange="preview(event)">
+                <input type="file" name="image" id="img" accept="image/*" capture="environment" hidden onchange="preview(event)">
                 <input type="hidden" name="camera_image" id="camera_image">
             </div>
 
@@ -137,19 +137,59 @@ function openCameraModal() {
 }
 
 async function startCamera() {
+    // Check for Secure Context
+    const isSecure = window.location.protocol === 'https:' || 
+                     window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1';
+
+    if (!isSecure) {
+        let helpMsg = "Camera access is BLOCKED because you are using HTTP instead of HTTPS.\n\n";
+        helpMsg += "Solutions:\n";
+        helpMsg += "1. Use 'localhost' instead of your domain name.\n";
+        helpMsg += "2. Use HTTPS for your domain.\n";
+        helpMsg += "3. For Chrome: Go to 'chrome://flags/#unsafely-treat-insecure-origin-as-secure', add your URL, and Enable it.\n\n";
+        helpMsg += "Would you like to try the mobile fallback (opens camera app)?";
+        
+        if (confirm(helpMsg)) {
+            closeCameraModal();
+            document.getElementById("img").click();
+        }
+        return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Your browser doesn't support camera access or it's restricted.");
+        return;
+    }
+
     try {
         stopCamera();
-
         const video = document.getElementById("cameraVideo");
 
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
+        const constraints = {
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                facingMode: "environment" 
+            },
             audio: false
-        });
+        };
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (e) {
+            console.log("Retrying with simple video constraint...");
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        }
 
         video.srcObject = stream;
+        
+        video.onloadedmetadata = () => {
+            video.play().catch(e => console.error("Video play failed:", e));
+        };
+
     } catch (err) {
-        alert("Camera open aagala. Browser permission allow pannunga or camera available-a irukka check pannunga.");
+        alert("Camera Error: " + err.name + " - " + err.message);
         console.error(err);
     }
 }
