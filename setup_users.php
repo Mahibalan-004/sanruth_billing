@@ -2,10 +2,10 @@
 require_once("config/db.php");
 
 echo "<div style='font-family: sans-serif; padding: 30px; max-width: 600px; margin: 50px auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);'>";
-echo "<h2 style='color: #1e293b; margin-top: 0;'>⚙️ System Initialization</h2>";
+echo "<h2 style='color: #1e293b; margin-top: 0;'>⚙️ User Table Setup</h2>";
 
-// 1. Create Credential Table
-$createTable = "CREATE TABLE IF NOT EXISTS `credential` (
+// 1. Create 'user' Table (Requested Name)
+$createTable = "CREATE TABLE IF NOT EXISTS `user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) DEFAULT NULL,
@@ -16,7 +16,7 @@ $createTable = "CREATE TABLE IF NOT EXISTS `credential` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
 if (mysqli_query($conn, $createTable)) {
-    echo "<p style='color: #10b981;'>✅ Database table <b>'credential'</b> is ready.</p>";
+    echo "<p style='color: #10b981;'>✅ Database table <b>'user'</b> is ready.</p>";
 } else {
     echo "<p style='color: #ef4444;'>❌ Error creating table: " . mysqli_error($conn) . "</p>";
 }
@@ -26,14 +26,14 @@ $username = "admin";
 $password = "admin123";
 $role = "ADMIN";
 
-$check = mysqli_query($conn, "SELECT id FROM credential WHERE username = '$username'");
+$check = mysqli_query($conn, "SELECT id FROM user WHERE username = '$username'");
 if (mysqli_num_rows($check) == 0) {
-    $insert = "INSERT INTO credential (username, password, role) VALUES ('$username', '$password', '$role')";
+    $insert = "INSERT INTO user (username, password, role) VALUES ('$username', '$password', '$role')";
     if (mysqli_query($conn, $insert)) {
-        echo "<p style='color: #10b981;'>✅ Default admin user created successfully.</p>";
+        echo "<p style='color: #10b981;'>✅ Default admin account created in 'user' table.</p>";
     }
 } else {
-    echo "<p style='color: #64748b;'>ℹ️ Admin user already exists.</p>";
+    echo "<p style='color: #64748b;'>ℹ️ Admin user already exists in 'user' table.</p>";
 }
 
 echo "<hr style='border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;'>";

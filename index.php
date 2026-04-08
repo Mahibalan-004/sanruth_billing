@@ -14,12 +14,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
-    // CHECK IF TABLE EXISTS
-    $tableCheck = mysqli_query($conn, "SHOW TABLES LIKE 'credential'");
-    if (mysqli_num_rows($tableCheck) == 0) {
+    // CHECK IF 'user' TABLE EXISTS (NEW REQUEST)
+    $tableCheck = mysqli_query($conn, "SHOW TABLES LIKE 'user'");
+    $tableName = (mysqli_num_rows($tableCheck) > 0) ? 'user' : 'credential';
+
+    // CHECK IF TABLE EXISTS AT ALL
+    $finalCheck = mysqli_query($conn, "SHOW TABLES LIKE '$tableName'");
+    if (mysqli_num_rows($finalCheck) == 0) {
         $error = "System Error: Authentication table missing. <a href='setup_users.php' style='color:inherit; font-weight:bold;'>Click here to fix it.</a>";
     } else {
-        $query = "SELECT * FROM credential WHERE username = '$username' LIMIT 1";
+        $query = "SELECT * FROM $tableName WHERE username = '$username' LIMIT 1";
         $result = mysqli_query($conn, $query);
 
         if ($result && mysqli_num_rows($result) > 0) {
@@ -36,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $error = "Invalid username or password.";
             }
         } else {
-            $error = "Invalid username or password. <br><small>Tip: If this is a new setup, run <a href='setup_users.php'>setup_users.php</a></small>";
+            $error = "Invalid username or password. <br><small>Tip: Run <a href='setup_users.php'>setup_users.php</a> to fix.</small>";
         }
     }
 }
