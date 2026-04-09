@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once("../config/db.php");
 include("../includes/header.php");
 
@@ -8,7 +8,7 @@ $currentDate = date('Y-m-d');
 ?>
 
 <div style="padding: 20px; background: #f8fafc; min-height: calc(100vh - 110px);">
-    
+
     <!-- HEADER BAR -->
     <div style="background: #1e7e34; height: 50px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px 8px 0 0; overflow: hidden; padding: 0 20px;">
         <div style="color: #fff; font-weight: 700; font-size: 18px;">Sales Order</div>
@@ -19,9 +19,9 @@ $currentDate = date('Y-m-d');
 
     <!-- MAIN FORM CARD -->
     <div style="background: #fff; border-radius: 0 0 12px 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); padding: 25px; border: 1px solid #e2e8f0; border-top: none;">
-        
+
         <form id="salesForm" action="insert_sales.php" method="POST">
-            
+
             <!-- ORDER HEADER -->
             <div class="form-grid-3" style="margin-bottom: 30px;">
                 <div class="form-group">
@@ -49,7 +49,7 @@ $currentDate = date('Y-m-d');
                     <h4 style="margin: 0; color: #1e293b; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Customer Info:</h4>
                     <button type="button" onclick="clearCustomer()" style="background: #f59e0b; color: #fff; border: none; padding: 6px 15px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">Clear Customer Info</button>
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
                     <!-- Left: Contact info -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -66,7 +66,7 @@ $currentDate = date('Y-m-d');
                             <input type="text" name="customerName" id="customerName" placeholder="Customer Full Name">
                         </div>
                     </div>
-                    
+
                     <!-- Right: Address -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="form-group" style="grid-column: span 2;">
@@ -107,7 +107,7 @@ $currentDate = date('Y-m-d');
                         <!-- Rows will be added here -->
                     </tbody>
                 </table>
-                
+
                 <!-- Totals Row -->
                 <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
                     <div style="width: 300px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px;">
@@ -119,7 +119,7 @@ $currentDate = date('Y-m-d');
                             <span>Paid Rs:</span>
                             <span id="totalPaid">0.00</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-weight: 700; color: #1e293b; border-top: 1px solid #cbd5e1; pt: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; color: #1e293b; border-top: 1px solid #cbd5e1; padding-top: 10px;">
                             <span>Balance Rs:</span>
                             <span id="balanceAmount">0.00</span>
                         </div>
@@ -174,10 +174,17 @@ $currentDate = date('Y-m-d');
     <tr style="border-bottom: 1px solid #f1f5f9;">
         <td class="row-num" style="padding: 12px; font-size: 13px; color: #94a3b8; font-weight: 600;">1</td>
         <td style="padding: 12px;">
-            <div style="width: 40px; height: 40px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 20px;">🖼️</div>
+            <div class="img-box"
+                style="width: 40px; height: 40px; background: #f8fafc; border-radius: 6px; display:flex; align-items:center; justify-content:center; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 20px;">🖼️</div>
         </td>
         <td style="padding: 12px;">
-            <input type="text" name="item[]" required style="width: 100%; height: 38px; border: 1.5px solid #e2e8f0; border-radius: 6px; padding: 0 10px;" placeholder="Search Item..." onkeyup="searchItem(this)">
+            <div style="position:relative;">
+                <input type="text" name="item[]" class="item-input"
+                    onkeyup="searchItem(this)"
+                    placeholder="Search Item...">
+
+                <div class="search-results"></div>
+            </div>
         </td>
         <td style="padding: 12px;">
             <input type="text" name="barcode[]" style="width: 100%; height: 38px; border: 1.5px solid #e2e8f0; border-radius: 6px; padding: 0 10px;">
@@ -210,100 +217,259 @@ $currentDate = date('Y-m-d');
 </template>
 
 <style>
-    .form-group label { display: block; font-weight: 700; color: #1e293b; margin-bottom: 8px; font-size: 14px; }
-    .form-group input, .form-group select { width: 100%; height: 48px; padding: 0 15px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: 0.2s; }
-    .form-group input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-    .disabled-input { background: #f1f5f9; cursor: not-allowed; }
-    .required { color: #ef4444; }
-    .system-gen { color: #94a3b8; font-weight: 500; font-size: 12px; }
-    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-    .form-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
-    .prime-btn { padding: 12px 35px; border: none; border-radius: 8px; color: white; font-weight: 700; font-size: 15px; cursor: pointer; }
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        height: 48px;
+        padding: 0 15px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .disabled-input {
+        background: #f1f5f9;
+        cursor: not-allowed;
+    }
+
+    .required {
+        color: #ef4444;
+    }
+
+    .system-gen {
+        color: #94a3b8;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .form-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-grid-4 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 20px;
+    }
+
+    .prime-btn {
+        padding: 12px 35px;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+    }
+    .search-results{
+    position:absolute;
+    top:100%;
+    left:0;
+    width:100%;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:6px;
+    max-height:200px;
+    overflow:auto;
+    z-index:999;
+}
+
+.result-item{
+    padding:10px;
+    cursor:pointer;
+    border-bottom:1px solid #eee;
+    font-size:13px;
+}
+
+.result-item:hover{
+    background:#f1f5f9;
+}
+@media(max-width:768px){
+    .search-results{
+        font-size:12px;
+    }
+}
 </style>
 
 <script>
-function addItemRow() {
-    const tbody = document.getElementById('itemsBody');
-    const template = document.getElementById('itemRowTemplate');
-    const clone = template.content.cloneNode(true);
-    tbody.appendChild(clone);
-    updateRowNumbers();
-}
-
-function updateRowNumbers() {
-    document.querySelectorAll('.row-num').forEach((td, index) => {
-        td.textContent = index + 1;
-    });
-}
-
-function removeItemRow(btn) {
-    const row = btn.closest('tr');
-    if (document.querySelectorAll('#itemsBody tr').length > 1) {
-        row.remove();
+    function addItemRow() {
+        const tbody = document.getElementById('itemsBody');
+        const template = document.getElementById('itemRowTemplate');
+        const clone = template.content.cloneNode(true);
+        tbody.appendChild(clone);
         updateRowNumbers();
+    }
+
+    function updateRowNumbers() {
+        document.querySelectorAll('.row-num').forEach((td, index) => {
+            td.textContent = index + 1;
+        });
+    }
+
+    function removeItemRow(btn) {
+        const row = btn.closest('tr');
+        if (document.querySelectorAll('#itemsBody tr').length > 1) {
+            row.remove();
+            updateRowNumbers();
+            updateTotals();
+        }
+    }
+
+    function addPaymentRow() {
+        const container = document.getElementById('paymentsList');
+        const firstRow = container.querySelector('.payment-row');
+        const clone = firstRow.cloneNode(true);
+        clone.querySelectorAll('input').forEach(input => {
+            if (input.type != 'date') input.value = '';
+            if (input.classList.contains('pay-amount')) input.value = '0';
+        });
+        container.appendChild(clone);
+    }
+
+    function updateRowTotal(el) {
+        const row = el.closest('tr');
+        const qty = parseFloat(row.querySelector('[name="qty[]"]').value) || 0;
+        const price = parseFloat(row.querySelector('[name="price[]"]').value) || 0;
+        const gst = parseFloat(row.querySelector('[name="gst[]"]').value) || 0;
+
+        const totalWithoutGst = qty * price;
+        const gstVal = totalWithoutGst * (gst / 100);
+        const total = totalWithoutGst + gstVal;
+
+        row.querySelector('[name="total[]"]').value = total.toFixed(2);
         updateTotals();
     }
-}
 
-function addPaymentRow() {
-    const container = document.getElementById('paymentsList');
-    const firstRow = container.querySelector('.payment-row');
-    const clone = firstRow.cloneNode(true);
-    clone.querySelectorAll('input').forEach(input => {
-        if(input.type != 'date') input.value = '';
-        if(input.classList.contains('pay-amount')) input.value = '0';
-    });
-    container.appendChild(clone);
-}
+    function updateTotals() {
+        let grandTotal = 0;
+        document.querySelectorAll('[name="total[]"]').forEach(input => {
+            grandTotal += parseFloat(input.value) || 0;
+        });
 
-function updateRowTotal(el) {
-    const row = el.closest('tr');
-    const qty = parseFloat(row.querySelector('[name="qty[]"]').value) || 0;
-    const price = parseFloat(row.querySelector('[name="price[]"]').value) || 0;
-    const gst = parseFloat(row.querySelector('[name="gst[]"]').value) || 0;
-    
-    const totalWithoutGst = qty * price;
-    const gstVal = totalWithoutGst * (gst / 100);
-    const total = totalWithoutGst + gstVal;
-    
-    row.querySelector('[name="total[]"]').value = total.toFixed(2);
-    updateTotals();
-}
+        let totalPaid = 0;
+        document.querySelectorAll('.pay-amount').forEach(input => {
+            totalPaid += parseFloat(input.value) || 0;
+        });
 
-function updateTotals() {
-    let grandTotal = 0;
-    document.querySelectorAll('[name="total[]"]').forEach(input => {
-        grandTotal += parseFloat(input.value) || 0;
-    });
-    
-    let totalPaid = 0;
-    document.querySelectorAll('.pay-amount').forEach(input => {
-        totalPaid += parseFloat(input.value) || 0;
-    });
-    
-    document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
-    document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
-    document.getElementById('balanceAmount').textContent = (grandTotal - totalPaid).toFixed(2);
-}
-
-function clearCustomer() {
-    ['customerPhone', 'customerWhatsApp', 'customerName', 'addressLine1', 'addressLine2', 'city'].forEach(id => {
-        document.getElementById(id).value = '';
-    });
-}
-
-function searchCustomer(phone) {
-    if(phone.length >= 10) {
-        // Here we would normally do an AJAX call
-        // For now, it's a placeholder
-        console.log("Searching for " + phone);
+        document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
+        document.getElementById('balanceAmount').textContent = (grandTotal - totalPaid).toFixed(2);
     }
+
+    function clearCustomer() {
+        ['customerPhone', 'customerWhatsApp', 'customerName', 'addressLine1', 'addressLine2', 'city'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+    }
+
+    function searchCustomer(phone) {
+        if (phone.length >= 10) {
+            // Here we would normally do an AJAX call
+            // For now, it's a placeholder
+            console.log("Searching for " + phone);
+        }
+    }
+
+    let searchTimer;
+
+function searchItem(input){
+
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+
+        const query = input.value.trim();
+        const resultBox = input.parentElement.querySelector('.search-results');
+
+        // Clear if too short
+        if(query.length < 2){
+            resultBox.innerHTML = "";
+            return;
+        }
+
+        fetch(`search_stock.php?term=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+
+            let html = "";
+
+            if(data.length === 0){
+                html = `<div class="result-item">No results found</div>`;
+            } else {
+                data.forEach(item => {
+                    html += `
+                    <div class="result-item"
+                        onclick='selectItem(this, ${encodeURIComponent(JSON.stringify(item))})'>
+                        ${escapeHtml(item.spareName)} (${escapeHtml(item.barCode)})
+                    </div>`;
+                });
+            }
+
+            resultBox.innerHTML = html;
+        })
+        .catch(err => {
+            console.error("Search error:", err);
+            resultBox.innerHTML = `<div class="result-item">Error loading data</div>`;
+        });
+
+    }, 300); // debounce delay
 }
 
-// Init one row
-window.onload = function() {
-    addItemRow();
-};
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, function (m) {
+        return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        })[m];
+    });
+}
+    // SELECT ITEM
+    function selectItem(el, data){
+    const item = JSON.parse(decodeURIComponent(data));
+        const row = el.closest('tr');
+
+        row.querySelector('[name="item[]"]').value = item.spareName;
+        row.querySelector('[name="barcode[]"]').value = item.barCode;
+        row.querySelector('[name="serial[]"]').value = item.partNo;
+        row.querySelector('[name="rack[]"]').value = item.rackNumber;
+        row.querySelector('[name="price[]"]').value = item.selledPricePerUnit || 0;
+
+        // IMAGE
+        const imgBox = row.querySelector('.img-box');
+        if (imgBox) {
+            imgBox.innerHTML = `<img src="../uploads/spares/${item.picture}" style="width:40px;height:40px;">`;
+        }
+
+        // clear dropdown
+        el.parentElement.innerHTML = "";
+
+        updateRowTotal(row.querySelector('[name="price[]"]'));
+    }
+
+    // Init one row
+    window.onload = function() {
+        addItemRow();
+    };
 </script>
 
 <?php include("../includes/footer.php"); ?>

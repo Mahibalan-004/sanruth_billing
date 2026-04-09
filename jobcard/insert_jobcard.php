@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $wDetails = mysqli_real_escape_string($conn, $_POST['workDetails']);
         $remarks = mysqli_real_escape_string($conn, $_POST['remarks']);
         
-        $itemSql = "INSERT INTO jobcard_items (jobcardId, machineId, serialNo, workDetails, remarks) 
+        $itemSql = "INSERT INTO jobcarditems (id, machineId, serialNo, workDetails, remarks) 
                     VALUES ($jobcardId, $mId, '$serial', '$wDetails', '$remarks')";
         mysqli_query($conn, $itemSql);
 

@@ -457,6 +457,16 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </div>
                     </div>
 
+                    <hr class="dropdown-divider">
+
+                    <div class="submenu">
+                        <span class="submenu-link">Machine &#9654;</span>
+                        <div class="submenu-dropdown">
+                            <a href="../machine/add_machine.php">+ Add Machine</a>
+                            <a href="../machine/list_machine.php">Machine List</a>
+                        </div>
+                    </div>
+
                 </div>
             </li>
 
