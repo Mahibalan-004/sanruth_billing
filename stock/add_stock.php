@@ -1,328 +1,698 @@
 <?php require_once("../config/db.php"); ?>
 <?php
 $generatedBarcode = $_GET['barcode'] ?? '';
+$successMsg = $_GET['success'] ?? '';
 ?>
 <?php include("../includes/header.php"); ?>
 
-<div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
-        <h2>Add New Stock Entry</h2>
-        <a href="list.php" style="padding:8px 16px; background:#f4f4f4; color:#333; text-decoration:none; border-radius:6px; font-weight:600; font-size:13px; border:1px solid #ddd;">&larr; View Stock List</a>
-    </div>
-
-    <form method="POST" action="insert_stock.php" enctype="multipart/form-data">
-
-        <div class="grid">
-
-            <!-- LEFT COLUMN: IMAGE UPLOAD -->
-            <div class="column-left">
-                <div class="image-box" onclick="openImageOptions()" style="background:#f8fafc; border:2px dashed #cbd5e1; height:240px; border-radius:12px; display:flex; justify-content:center; align-items:center; cursor:pointer; overflow:hidden; position:relative;">
-                    <img id="preview" src="" alt="Upload Image" style="max-width:100%; max-height:100%; object-fit:contain;">
-                    <div id="uploadPlaceholder" style="text-align:center; color:#64748b;">
-                        <span style="font-size:32px; display:block;">+</span>
-                        <span style="font-size:12px; font-weight:600;">Add Product Image</span>
-                    </div>
-                </div>
-
-                <div style="margin-top:10px; display:flex; gap:10px;">
-                    <button type="button" class="btn-secondary" id="removeBtn" onclick="removeImage()" style="flex:1; padding:8px; display:none; background:#ef44441a; color:#ef4444; border:1px solid #ef444433; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">Delete Image</button>
-                    <button type="button" class="btn-primary" onclick="openImageOptions()" style="flex:1; padding:8px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-size:13px;">Change Image</button>
-                </div>
-
-                <input type="file" name="image" id="img" accept="image/*" hidden onchange="preview(event)">
-                <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden onchange="preview(event)">
-            </div>
-
-            <!-- CENTER COLUMN: PRODUCT DATA -->
-            <div class="column-center">
-                <div class="form-section">
-                    <label>Select Spare / Part # *</label>
-                    <div style="position:relative;">
-                        <input type="text" id="spareSearch" placeholder="Search by name or part number..." onkeyup="searchSpare()" autocomplete="off" required style="padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; font-size:14px;">
-                        <div id="spareList" style="border:1px solid #ddd; max-height:220px; overflow:auto; display:none; background:#fff; position:absolute; width:100%; z-index:1000; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); border-radius:0 0 8px 8px;"></div>
-                    </div>
-                    <input type="hidden" name="spare" id="spareId">
-                </div>
-
-                <div class="grid-2-col" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
-                    <div class="form-section">
-                        <label>Rack Location</label>
-                        <input type="text" id="rack" readonly style="background:#f1f5f9; cursor:not-allowed; padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; font-weight:600; color:#475569;">
-                    </div>
-                    <div class="form-section">
-                        <label>Part Number</label>
-                        <input type="text" id="part" readonly style="background:#f1f5f9; cursor:not-allowed; padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; font-weight:600; color:#475569;">
-                    </div>
-                </div>
-
-                <div class="grid-2-col" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:20px;">
-                    <div class="form-section">
-                        <label>Brand <span onclick="openModal('brandModal')" style="float:right; font-size:11px; color:#2563eb; cursor:pointer;">+ Add New</span></label>
-                        <select name="brand" style="padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; appearance:none; background:url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CBD5E1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E') no-repeat right 12px center; background-size: 10px; font-weight:500;">
-                            <option value="">-- Generic / None --</option>
-                            <?php
-                            $res = mysqli_query($conn, "SELECT * FROM brand");
-                            while ($r = mysqli_fetch_assoc($res)) {
-                                echo "<option value='{$r['id']}'>{$r['brandName']}</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-
-                    <div class="form-section">
-                        <label>Model <span onclick="openModal('modelModal')" style="float:right; font-size:11px; color:#2563eb; cursor:pointer;">+ Add New</span></label>
-                        <select name="model" style="padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; appearance:none; background:url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CBD5E1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E') no-repeat right 12px center; background-size: 10px; font-weight:500;">
-                            <option value="">-- Standard --</option>
-                            <?php
-                            $res = mysqli_query($conn, "SELECT * FROM model");
-                            while ($r = mysqli_fetch_assoc($res)) {
-                                echo "<option value='{$r['id']}'>{$r['model']}</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-section" style="margin-top:20px; display:flex; gap:15px; align-items:center;">
-                    <div style="flex:1;">
-                        <label>New Quantity In Stock</label>
-                        <input type="number" id="new" value="1" name="quantity" style="padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; font-weight:700; font-size:18px; color:#1e293b;">
-                    </div>
-                    <div style="flex:1;">
-                        <label>Warranty (Months)</label>
-                        <input type="number" name="warrantyInMonths" value="0" style="padding:10px 12px; width:100%; border:1px solid #ddd; border-radius:8px; font-weight:700; font-size:18px; color:#1e293b;">
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- RIGHT COLUMN: PRICING & ACTION -->
-            <div class="column-right">
-                <div class="card pricing-card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px;">
-                    <h4 style="margin-bottom:15px; color:#334155; font-size:14px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">Pricing Configuration</h4>
-
-                    <div class="form-section">
-                        <label>Actual Buying Price (Unit)</label>
-                        <input type="number" id="actual" placeholder="0.00" style="padding:12px; border:1px solid #ddd; border-radius:8px; width:100%; font-size:16px; font-weight:600; margin-bottom:15px;">
-                    </div>
-
-                    <div class="form-section">
-                        <label>Selling Price (Unit)</label>
-                        <input type="number" id="selling" placeholder="0.00" style="padding:12px; border:1px solid #ddd; border-radius:8px; width:100%; font-size:16px; font-weight:600; margin-bottom:15px;">
-                    </div>
-
-                    <div class="form-section">
-                        <label>GST Percentage (%)</label>
-                        <input type="number" id="gst" value="18" style="padding:12px; border:1px solid #ddd; border-radius:8px; width:100%; font-size:16px; font-weight:600; margin-bottom:15px;">
-                    </div>
-
-                    <div style="background:#fff; border-radius:8px; padding:15px; border:1px solid #e2e8f0;">
-                         <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                            <span style="font-size:12px; color:#64748b; font-weight:600;">Total Actual Value:</span>
-                            <span id="displayActual" style="font-size:14px; color:#334155; font-weight:700;">₹ 0.00</span>
-                         </div>
-                         <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                            <span style="font-size:12px; color:#64748b; font-weight:600;">Final Sell Price:</span>
-                            <span id="displaySelled" style="font-size:14px; color:#10b981; font-weight:800;">₹ 0.00</span>
-                         </div>
-                         <div style="font-size:10px; color:#94a3b8; text-align:center; padding-top:5px; border-top:1px dashed #e2e8f0;">
-                             Includes Calculated GST
-                         </div>
-                    </div>
-                </div>
-
-                <div class="form-section" style="margin-top:20px;">
-                    <label>Barcode Identifier</label>
-                    <input type="text" name="barCode" id="barcode" readonly style="background:#f8fafc; border:1px dotted #cbd5e1; text-align:center; font-family:monospace; padding:10px; border-radius:8px; font-size:16px; width:100%; margin-bottom:10px;">
-                    <button type="button" id="genBtn" onclick="generateBarcode()" disabled style="width:100%; padding:10px; border-radius:8px; border:1px solid #2563eb; color:#2563eb; background:#fff; font-weight:700; cursor:pointer;" onmouseover="this.style.background='#2563eb11'" onmouseout="this.style.background='white'">Show Barcode Preview</button>
-                    
-                    <div id="barcodePreview" style="display:none; text-align:center; margin-top:20px; padding:15px; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
-                        <svg id="barcodeSvg" style="max-width:100%;"></svg>
-                        <br><button type="button" onclick="printBarcode()" style="margin-top:10px; padding:5px 15px; border-radius:4px; background:#475569; color:#fff; border:none; cursor:pointer; font-weight:600; font-size:11px;">Print Label</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- PRICING RECAP (HIDDEN) -->
-        <input type="hidden" name="actualPricePerQty" id="tActual">
-        <input type="hidden" name="sellingPricePerQty" id="tSelling">
-        <input type="hidden" name="selledPricePerUnit" id="selled">
-        <input type="hidden" name="actualPricePerUnit" id="actualUnit">
-        <input type="hidden" name="sellingPricePerUnit" id="sellingUnit">
-        <input type="hidden" name="availableQty" id="availableQty">
-
-        <!-- SUBMIT ACTIONS -->
-        <div style="margin-top:40px; padding-top:25px; border-top:1px solid #e2e8f0; display:flex; justify-content:center; gap:20px;">
-            <button type="reset" class="btn-cancel" style="padding:15px 40px; background:#f1f5f9; color:#475569; border:none; border-radius:10px; font-weight:700; font-size:16px; cursor:pointer;">Reset Form</button>
-            <button type="submit" class="btn-submit" style="padding:15px 80px; background:linear-gradient(to right, #10b981, #059669); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:16px; cursor:pointer; box-shadow:0 10px 15px -3px rgba(16, 185, 129, 0.3);">Add To Inventory</button>
-        </div>
-
-    </form>
-</div>
-
-<!-- MODALS -->
-<div id="brandModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-    <div class="modal-content" style="background:#fff; width:400px; margin:150px auto; padding:30px; border-radius:12px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
-        <h3 style="margin-bottom:20px;">Add New Brand</h3>
-        <input type="text" id="bname" placeholder="Brand Name" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
-        <div style="display:flex; gap:10px;">
-            <button onclick="document.getElementById('brandModal').style.display='none'" style="flex:1; padding:10px; border:none; background:#f1f5f9; border-radius:8px; cursor:pointer;">Cancel</button>
-            <button onclick="saveBrand()" style="flex:1; padding:10px; border:none; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer;">Save Brand</button>
-        </div>
-    </div>
-</div>
-
-<div id="modelModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-    <div class="modal-content" style="background:#fff; width:400px; margin:150px auto; padding:30px; border-radius:12px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
-        <h3 style="margin-bottom:20px;">Add New Model</h3>
-        <input type="text" id="mname" placeholder="Model Name" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; margin-bottom:20px;">
-        <div style="display:flex; gap:10px;">
-            <button onclick="document.getElementById('modelModal').style.display='none'" style="flex:1; padding:10px; border:none; background:#f1f5f9; border-radius:8px; cursor:pointer;">Cancel</button>
-            <button onclick="saveModel()" style="flex:1; padding:10px; border:none; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer;">Save Model</button>
-        </div>
-    </div>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-    .container { width: 95%; margin: auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
-    .grid { display: grid; grid-template-columns: 280px 1fr 340px; gap: 40px; }
-    label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 6px; display: block; }
-    h2 { font-weight: 800; color: #1e293b; letter-spacing: -0.025em; }
-    @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } .column-left, .column-right { max-width: 500px; margin: auto; width: 100%; } }
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --label: #64748b;
+    --text: #1e293b;
+    --accent: #2563eb;
+    --green: #10b981;
+    --red: #ef4444;
+    --input-bg: #f8fafc;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+
+  .page-wrapper { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .page-header h2 { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+
+  .btn-back {
+    font-size: 13px; font-weight: 600; color: var(--label);
+    text-decoration: none; padding: 7px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--card); transition: all 0.15s;
+  }
+  .btn-back:hover { background: var(--bg); color: var(--text); }
+
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr 300px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  label {
+    font-size: 12px; font-weight: 600; color: var(--label);
+    display: block; margin-bottom: 5px;
+  }
+  label .add-link {
+    float: right; font-size: 11px; color: var(--accent);
+    cursor: pointer; font-weight: 600;
+  }
+
+  input[type=text], input[type=number], select {
+    width: 100%; padding: 9px 11px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    color: var(--text); background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  input:focus, select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+  input[readonly] { background: var(--input-bg); color: var(--label); cursor: not-allowed; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* ── Spare Image Preview (read-only from DB) ── */
+  .spare-image-box {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--input-bg);
+    overflow: hidden;
+    position: relative;
+  }
+  .spare-image-box img {
+    max-width: 100%; max-height: 100%; object-fit: contain;
+    border-radius: 10px;
+  }
+  .spare-image-box .img-placeholder {
+    text-align: center; color: #94a3b8;
+  }
+  .spare-image-box .img-placeholder .icon { font-size: 32px; margin-bottom: 6px; }
+  .spare-image-box .img-placeholder span { font-size: 11px; font-weight: 600; display: block; }
+
+  .img-label {
+    margin-top: 8px; text-align: center;
+    font-size: 11px; font-weight: 600; color: var(--label);
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 8px;
+  }
+
+  /* ── Top bar ── */
+  .top-bar {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 20px;
+  }
+  .multi-stock-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: var(--label); cursor: pointer;
+  }
+  .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--label); }
+  .toggle { position: relative; width: 40px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: #cbd5e1; border-radius: 22px; cursor: pointer; transition: background 0.2s; }
+  .slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+  input:checked + .slider { background: var(--green); }
+  input:checked + .slider:before { transform: translateX(18px); }
+
+  /* ── Section divider ── */
+  .section-divider {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--label);
+    padding: 6px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 14px;
+  }
+
+  /* ── Barcode ── */
+  .barcode-field { font-family: 'DM Mono', monospace; text-align: center; font-size: 15px; letter-spacing: 0.05em; }
+  #barcodePreview {
+    display: none; margin-top: 14px; padding: 14px;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; text-align: center;
+  }
+
+  /* ── Search dropdown ── */
+  .search-wrap { position: relative; }
+  #spareList {
+    position: absolute; top: 100%; left: 0; right: 0;
+    border: 1px solid var(--border); background: #fff;
+    border-radius: 0 0 10px 10px; max-height: 250px;
+    overflow-y: auto; z-index: 1000; display: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  #spareList .spare-item {
+    padding: 9px 12px; cursor: pointer;
+    border-bottom: 1px solid #f8fafc; font-size: 13px;
+    transition: background 0.1s; display: flex; align-items: center; gap: 10px;
+  }
+  #spareList .spare-item:hover { background: #f0f7ff; }
+  #spareList .spare-item img {
+    width: 36px; height: 36px; object-fit: cover;
+    border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0;
+  }
+  #spareList .spare-item .info strong { display: block; font-weight: 700; font-size: 13px; }
+  #spareList .spare-item .info small { color: var(--label); font-size: 11px; }
+
+  /* ── Action Buttons ── */
+  .action-bar {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding-top: 20px; border-top: 1px solid var(--border); margin-top: 20px;
+  }
+  .btn { padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .btn-reset { background: var(--input-bg); color: var(--label); border: 1px solid var(--border); }
+  .btn-reset:hover { background: #e2e8f0; }
+  .btn-generate { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  .btn-generate:hover { background: #eff6ff; }
+  .btn-submit { background: linear-gradient(135deg, var(--green), #059669); color: #fff; padding: 10px 36px; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+  .btn-submit:hover { box-shadow: 0 6px 18px rgba(16,185,129,0.4); transform: translateY(-1px); }
+
+  /* ── Success Toast ── */
+  .toast {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    background: #10b981; color: #fff; padding: 14px 22px;
+    border-radius: 10px; font-weight: 700; font-size: 14px;
+    box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000; backdrop-filter: blur(2px); }
+  .modal-box { background: #fff; width: 380px; margin: 140px auto; padding: 28px; border-radius: 14px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+  .modal-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-modal-cancel { flex:1; padding:10px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-weight:600; font-family:'DM Sans',sans-serif; }
+  .btn-modal-save { flex:1; padding:10px; background:var(--accent); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:'DM Sans',sans-serif; }
+
+  @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
 </style>
 
+<?php if($successMsg): ?>
+<div class="toast" id="toast">✅ Stock added successfully!</div>
+<script>setTimeout(()=>document.getElementById('toast').remove(), 3500);</script>
+<?php endif; ?>
+
+<div class="page-wrapper">
+
+  <div class="page-header">
+    <h2>Stock Info</h2>
+    <a href="list.php" class="btn-back">☰ Stocks</a>
+  </div>
+
+  <div class="card">
+
+    <div class="top-bar">
+      <label class="multi-stock-label">
+        <input type="checkbox" id="multiCheck" style="width:auto;"> Add multiple stock
+      </label>
+      <div class="toggle-row">
+        <label class="toggle" style="margin:0;">
+          <input type="checkbox" id="selledToggle" name="selled" value="1">
+          <span class="slider"></span>
+        </label>
+        Selled
+      </div>
+    </div>
+
+    <form method="POST" action="insert_stock.php" id="stockForm">
+
+      <div class="main-grid">
+
+        <!-- LEFT: Spare Image (auto-loaded from DB) -->
+        <div>
+          <div class="spare-image-box" id="spareImageBox">
+            <img id="spareImg" src="" alt="" style="display:none;">
+            <div class="img-placeholder" id="imgPlaceholder">
+              <div class="icon">🔍</div>
+              <span>Search an item</span>
+              <span>to load image</span>
+            </div>
+          </div>
+          <div class="img-label" id="imgLabel">No item selected</div>
+        </div>
+
+        <!-- CENTER: Item Data -->
+        <div>
+
+          <div class="form-group">
+            <label>Item Name <span style="color:var(--red)">*</span></label>
+            <div class="search-wrap">
+              <input type="text" id="spareSearch" name="itemName" placeholder="Search by name or part number..." onkeyup="searchSpare()" autocomplete="off" required>
+              <div id="spareList"></div>
+            </div>
+            <input type="hidden" name="spare" id="spareId">
+            <input type="hidden" name="sparePicture" id="sparePicture">
+          </div>
+
+          <div class="grid-2 form-group">
+            <div>
+              <label>Brand <span class="add-link" onclick="openModal('brandModal')">+ Add</span></label>
+              <select name="brand" id="brandSelect">
+                <option value="">-- Generic / None --</option>
+                <?php
+                $res = mysqli_query($conn, "SELECT * FROM brand ORDER BY brandName");
+                while ($r = mysqli_fetch_assoc($res)) {
+                  echo "<option value='{$r['id']}'>" . htmlspecialchars($r['brandName']) . "</option>";
+                }
+                ?>
+              </select>
+            </div>
+            <div>
+              <label>Model <span class="add-link" onclick="openModal('modelModal')">+ Add</span></label>
+              <select name="model" id="modelSelect">
+                <option value="">-- Standard --</option>
+                <?php
+                $res = mysqli_query($conn, "SELECT * FROM model ORDER BY model");
+                while ($r = mysqli_fetch_assoc($res)) {
+                  echo "<option value='{$r['id']}'>" . htmlspecialchars($r['model']) . "</option>";
+                }
+                ?>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2 form-group">
+            <div>
+              <label>Quantity <span style="color:var(--red)">*</span></label>
+              <input type="number" id="qtyInput" name="quantity" value="1" min="1" required oninput="syncQty(this)">
+            </div>
+            <div>
+              <label>Barcode <small style="color:var(--label); font-weight:400;">System generated</small></label>
+              <input type="text" name="barCode" id="barcode" class="barcode-field" readonly value="<?php echo htmlspecialchars($generatedBarcode); ?>">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Serial #</label>
+            <input type="text" name="serialNo" id="serialNo" placeholder="Optional serial number">
+          </div>
+
+          <div class="grid-3 form-group">
+            <div>
+              <label>Min Qty (Reorder)</label>
+              <input type="number" name="minQty" value="0" min="0">
+            </div>
+            <div>
+              <label>Old Stock</label>
+              <input type="number" id="oldStock" value="0" min="0" readonly>
+            </div>
+            <div>
+              <label>New Stock</label>
+              <input type="number" id="newStock" value="1" min="0" oninput="syncQty(this)">
+            </div>
+          </div>
+
+          <div class="grid-2 form-group">
+            <div>
+              <label>Unit</label>
+              <select name="unit">
+                <option value="pcs">Pieces (pcs)</option>
+                <option value="set">Set</option>
+                <option value="nos">Nos</option>
+                <option value="kg">Kg</option>
+                <option value="ltr">Litre</option>
+                <option value="mtr">Metre</option>
+                <option value="box">Box</option>
+              </select>
+            </div>
+            <div>
+              <label>Machine</label>
+              <select name="machine">
+                <option value="">-- Select Machine --</option>
+                <?php
+                $res = mysqli_query($conn, "SELECT * FROM machine ORDER BY machineName");
+                if ($res) while ($r = mysqli_fetch_assoc($res)) {
+                  echo "<option value='{$r['id']}'>" . htmlspecialchars($r['machineName']) . "</option>";
+                }
+                ?>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2 form-group">
+            <div>
+              <label>Purchase Item?</label>
+              <select name="purchaseItem">
+                <option value="1">Yes — Purchase</option>
+                <option value="0">No — In-house</option>
+              </select>
+            </div>
+            <div>
+              <label>Warranty (Months)</label>
+              <input type="number" name="warrantyInMonths" value="0" min="0">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT: Pricing -->
+        <div>
+          <div class="section-divider">Price Per Quantity</div>
+
+          <div class="form-group">
+            <label>Actual Price (Unit)</label>
+            <input type="number" id="actual" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label>Selling Price (Unit)</label>
+            <input type="number" id="selling" placeholder="0.00" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label>GST %</label>
+            <input type="number" id="gst" value="0" step="0.01" min="0">
+          </div>
+
+          <div class="section-divider">Total Price</div>
+
+          <div class="grid-3 form-group">
+            <div>
+              <label>Actual</label>
+              <input type="number" id="displayActualQty" readonly style="background:var(--input-bg); font-weight:700;" value="0">
+            </div>
+            <div>
+              <label>Selling</label>
+              <input type="number" id="displaySellingQty" readonly style="background:var(--input-bg); font-weight:700;" value="0">
+            </div>
+            <div>
+              <label>Selled</label>
+              <input type="number" id="displaySelled" readonly style="background:#f0fdf4; color:var(--green); font-weight:700;" value="0.00">
+            </div>
+          </div>
+
+          <!-- Hidden fields for DB -->
+          <input type="hidden" name="actualPricePerQty"   id="tActual">
+          <input type="hidden" name="actualPricePerUnit"  id="actualUnit">
+          <input type="hidden" name="sellingPricePerQty"  id="tSelling">
+          <input type="hidden" name="sellingPricePerUnit" id="sellingUnit">
+          <input type="hidden" name="selledPricePerUnit"  id="selledUnit">
+          <input type="hidden" name="gstPercentage"       id="gstHidden">
+          <input type="hidden" name="availableQty"        id="availableQty">
+
+          <!-- Barcode preview -->
+          <div style="margin-top:16px;">
+            <button type="button" id="genBtn" onclick="generateBarcode()"
+              <?php echo $generatedBarcode ? '' : 'disabled'; ?>
+              style="width:100%; padding:9px; border-radius:8px; border:1px solid var(--accent); color:var(--accent); background:#fff; font-weight:700; font-size:13px; cursor:pointer; font-family:'DM Sans',sans-serif;">
+              Show Barcode Preview
+            </button>
+
+            <div id="barcodePreview">
+              <svg id="barcodeSvg" style="max-width:100%;"></svg>
+              <br>
+              <button type="button" onclick="printBarcode()"
+                style="margin-top:8px; padding:5px 16px; border-radius:6px; background:#475569; color:#fff; border:none; cursor:pointer; font-size:11px; font-weight:700; font-family:'DM Sans',sans-serif;">
+                🖨 Print Label
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <button type="button" class="btn btn-generate" onclick="generateBarcode()">Generate</button>
+        <button type="submit" class="btn btn-submit">Submit</button>
+        <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Brand Modal -->
+<div id="brandModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Add New Brand</h3>
+    <label>Brand Name</label>
+    <input type="text" id="bname" placeholder="e.g. BOSCH">
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal('brandModal')">Cancel</button>
+      <button class="btn-modal-save" onclick="saveBrand()">Save Brand</button>
+    </div>
+  </div>
+</div>
+
+<!-- Model Modal -->
+<div id="modelModal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Add New Model</h3>
+    <label>Model Name</label>
+    <input type="text" id="mname" placeholder="e.g. MOTOR SPARES">
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal('modelModal')">Cancel</button>
+      <button class="btn-modal-save" onclick="saveModel()">Save Model</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script>
-    window.onload = function() {
-        let barcode = "<?php echo $generatedBarcode; ?>";
-        if (barcode) {
-            document.getElementById("barcode").value = barcode;
-            document.getElementById("genBtn").disabled = false;
-            showBarcode(barcode);
-        }
-    };
 
-    // IMAGE UPLOAD logic
-    function openImageOptions() {
-        let choice = confirm("Open Camera 📷? (Cancel for Gallery 📁)");
-        if (choice) { document.getElementById("cameraInput").click(); } 
-        else { document.getElementById("img").click(); }
+  // ── Init ──
+  window.onload = function() {
+    let barcode = "<?php echo addslashes($generatedBarcode); ?>";
+    if (barcode) {
+      document.getElementById("barcode").value = barcode;
+      document.getElementById("genBtn").disabled = false;
+      showBarcode(barcode);
     }
+    calc();
+  };
 
-    function preview(e) {
-        let file = e.target.files[0];
-        if (!file) return;
-        let reader = new FileReader();
-        reader.onload = function() {
-            document.getElementById("preview").src = reader.result;
-            document.getElementById("uploadPlaceholder").style.display = "none";
-            document.getElementById("removeBtn").style.display = "inline-block";
-        };
-        reader.readAsDataURL(file);
+  // ── Spare Image Loader ──
+  function loadSpareImage(picturePath, itemName) {
+    let img    = document.getElementById("spareImg");
+    let holder = document.getElementById("imgPlaceholder");
+    let lbl    = document.getElementById("imgLabel");
+
+    if (picturePath && picturePath !== 'no-image.png') {
+      img.src = "../" + picturePath;   // adjust path prefix to match your setup
+      img.style.display = "block";
+      holder.style.display = "none";
+    } else {
+      img.style.display = "none";
+      holder.style.display = "flex";
+      holder.querySelector('span').textContent = "No image";
     }
+    lbl.textContent = itemName || "—";
+  }
 
-    function removeImage() {
-        document.getElementById("preview").src = "";
-        document.getElementById("uploadPlaceholder").style.display = "block";
-        document.getElementById("img").value = "";
-        document.getElementById("cameraInput").value = "";
-        document.getElementById("removeBtn").style.display = "none";
-    }
+  function clearSpareImage() {
+    let img    = document.getElementById("spareImg");
+    let holder = document.getElementById("imgPlaceholder");
+    let lbl    = document.getElementById("imgLabel");
+    img.src = "";
+    img.style.display = "none";
+    holder.style.display = "flex";
+    holder.querySelector('.icon').textContent = "🔍";
+    lbl.textContent = "No item selected";
+  }
 
-    // CALCULATION logic
-    function calc() {
-        let q = +document.getElementById("new").value || 0;
-        let a = +document.getElementById("actual").value || 0;
-        let s = +document.getElementById("selling").value || 0;
-        let g = +document.getElementById("gst").value || 0;
+  // ── Sync quantity fields ──
+  function syncQty(el) {
+    document.getElementById("qtyInput").value  = el.value;
+    document.getElementById("newStock").value  = el.value;
+    calc();
+  }
 
-        let totalActual = (a * q).toFixed(2);
-        let totalSelling = (s * q).toFixed(2);
-        let finalSelled = (s + (s * g / 100)).toFixed(2);
+  // ── Calculation ──
+  function calc() {
+    let q = +document.getElementById("qtyInput").value  || 0;
+    let a = +document.getElementById("actual").value    || 0;
+    let s = +document.getElementById("selling").value   || 0;
+    let g = +document.getElementById("gst").value       || 0;
 
-        document.getElementById("tActual").value = totalActual;
-        document.getElementById("tSelling").value = totalSelling;
-        document.getElementById("selled").value = finalSelled;
-        
-        document.getElementById("displayActual").innerText = "₹ " + totalActual;
-        document.getElementById("displaySelled").innerText = "₹ " + finalSelled;
+    let totalActual  = +(a * q).toFixed(2);
+    let totalSelling = +(s * q).toFixed(2);
+    let finalSelled  = +(s + (s * g / 100)).toFixed(2);
 
-        document.getElementById("actualUnit").value = a;
-        document.getElementById("sellingUnit").value = s;
-        document.getElementById("availableQty").value = q;
-    }
+    document.getElementById("displayActualQty").value  = totalActual;
+    document.getElementById("displaySellingQty").value = totalSelling;
+    document.getElementById("displaySelled").value     = finalSelled;
 
-    document.querySelectorAll("input").forEach(i => {
-        i.addEventListener("input", calc);
-    });
+    document.getElementById("tActual").value      = totalActual;
+    document.getElementById("actualUnit").value   = a;
+    document.getElementById("tSelling").value     = totalSelling;
+    document.getElementById("sellingUnit").value  = s;
+    document.getElementById("selledUnit").value   = finalSelled;
+    document.getElementById("gstHidden").value    = g;
+    document.getElementById("availableQty").value = q;
+  }
 
-    // BARCODE logic
-    function generateBarcode() {
-        let code = document.getElementById("barcode").value;
-        if (!code) return;
+  document.querySelectorAll("#actual, #selling, #gst, #qtyInput").forEach(el => {
+    el.addEventListener("input", calc);
+  });
+
+  // ── Barcode ──
+  function generateBarcode() {
+    let spareId = document.getElementById("spareId").value;
+    if (!spareId) { alert("Please select a spare / item first."); return; }
+
+    fetch("generate_barcode.php?spare=" + spareId)
+      .then(r => r.text())
+      .then(code => {
+        code = code.trim();
+        document.getElementById("barcode").value = code;
         showBarcode(code);
         document.getElementById("genBtn").disabled = true;
-    }
+      })
+      .catch(() => alert("Failed to generate barcode. Check generate_barcode.php"));
+  }
 
-    function showBarcode(code) {
-        document.getElementById("barcodePreview").style.display = "block";
-        JsBarcode("#barcodeSvg", code, { format: "CODE128", width: 2, height: 40, displayValue: true });
-    }
-
-    function printBarcode() {
-        let content = document.getElementById("barcodePreview").innerHTML;
-        let w = window.open();
-        w.document.write("<html><body style='text-align:center'>" + content + "</body></html>");
-        w.print(); w.close();
-    }
-
-    // SEARCH logic
-    function searchSpare() {
-        let term = document.getElementById("spareSearch").value;
-        if (term.length < 1) { document.getElementById("spareList").style.display = "none"; return; }
-
-        fetch("search_spare.php?term=" + term)
-            .then(res => res.json())
-            .then(data => {
-                let list = document.getElementById("spareList");
-                list.innerHTML = "";
-                if (data.length === 0) { list.style.display = "none"; return; }
-
-                data.forEach(item => {
-                    let div = document.createElement("div");
-                    div.style.padding = "12px"; div.style.cursor = "pointer"; div.style.borderBottom = "1px solid #f1f5f9";
-                    div.innerHTML = `<span style="font-weight:700;">${item.spareName}</span> <span style="color:#64748b; font-size:11px;"># ${item.partNo}</span>`;
-                    div.onclick = function() { selectSpare(item); };
-                    list.appendChild(div);
-                });
-                list.style.display = "block";
-            });
-    }
-
-    function selectSpare(item) {
-        document.getElementById("spareSearch").value = item.spareName;
-        document.getElementById("spareId").value = item.id;
-        document.getElementById("rack").value = item.rackNumber;
-        document.getElementById("part").value = item.partNo;
-        document.getElementById("spareList").style.display = "none";
-        calc();
-    }
-
-    function openModal(id) { document.getElementById(id).style.display = 'block'; }
-
-    function saveBrand() {
-        fetch("save_brand.php", { method: "POST", body: new URLSearchParams({ name: document.getElementById("bname").value }) })
-        .then(() => location.reload());
-    }
-
-    function saveModel() {
-        fetch("save_model.php", { method: "POST", body: new URLSearchParams({ name: document.getElementById("mname").value }) })
-        .then(() => location.reload());
-    }
-
-    document.addEventListener("click", function(e) {
-        if (!e.target.closest("#spareSearch")) { document.getElementById("spareList").style.display = "none"; }
+  function showBarcode(code) {
+    document.getElementById("barcodePreview").style.display = "block";
+    JsBarcode("#barcodeSvg", code, {
+      format: "CODE128", width: 2, height: 50,
+      displayValue: true, fontSize: 13
     });
+  }
+
+  function printBarcode() {
+    let content = document.getElementById("barcodePreview").innerHTML;
+    let w = window.open('', '_blank');
+    w.document.write("<html><body style='text-align:center; padding:20px;'>" + content + "</body></html>");
+    w.document.close();
+    w.print();
+    w.close();
+  }
+
+  // ── Search Spare ──
+  function searchSpare() {
+    let term = document.getElementById("spareSearch").value.trim();
+    if (term.length < 1) {
+      document.getElementById("spareList").style.display = "none";
+      return;
+    }
+
+    fetch("search_spare.php?term=" + encodeURIComponent(term))
+      .then(r => r.json())
+      .then(data => {
+        let list = document.getElementById("spareList");
+        list.innerHTML = "";
+
+        if (!data.length) {
+          list.innerHTML = '<div style="padding:12px; color:#94a3b8; font-size:13px;">No results found</div>';
+          list.style.display = "block";
+          return;
+        }
+
+        data.forEach(item => {
+          let div = document.createElement("div");
+          div.className = "spare-item";
+
+          // thumbnail in dropdown
+          let thumbSrc = (item.picture && item.picture !== 'no-image.png')
+            ? "../" + item.picture
+            : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Crect width='36' height='36' fill='%23e2e8f0'/%3E%3Ctext x='50%25' y='55%25' font-size='16' text-anchor='middle' dominant-baseline='middle' fill='%2394a3b8'%3E📦%3C/text%3E%3C/svg%3E";
+
+          div.innerHTML = `
+            <img src="${thumbSrc}" alt="" onerror="this.style.display='none'">
+            <div class="info">
+              <strong>${item.spareName}</strong>
+              <small># ${item.partNo} &middot; Rack: ${item.rackNumber}</small>
+            </div>
+          `;
+          div.onclick = () => selectSpare(item);
+          list.appendChild(div);
+        });
+
+        list.style.display = "block";
+      })
+      .catch(() => {
+        document.getElementById("spareList").style.display = "none";
+      });
+  }
+
+  function selectSpare(item) {
+    document.getElementById("spareSearch").value = item.spareName;
+    document.getElementById("spareId").value     = item.id;
+    document.getElementById("sparePicture").value = item.picture || '';
+    document.getElementById("spareList").style.display = "none";
+    document.getElementById("genBtn").disabled   = false;
+
+    // Load spare image into preview box
+    loadSpareImage(item.picture, item.spareName);
+
+    // Fetch existing stock qty for this spare
+    fetch("get_stock_qty.php?spare=" + item.id)
+      .then(r => r.json())
+      .then(d => {
+        let oldQty = d.qty || 0;
+        document.getElementById("oldStock").value    = oldQty;
+        let newQty = +document.getElementById("qtyInput").value || 1;
+        document.getElementById("availableQty").value = newQty + oldQty;
+      })
+      .catch(() => {});
+
+    calc();
+  }
+
+  // ── Modals ──
+  function openModal(id)  { document.getElementById(id).style.display = 'block'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+  function saveBrand() {
+    let name = document.getElementById("bname").value.trim();
+    if (!name) return alert("Enter a brand name.");
+    fetch("save_brand.php", { method:"POST", body: new URLSearchParams({ name }) })
+      .then(() => location.reload());
+  }
+
+  function saveModel() {
+    let name = document.getElementById("mname").value.trim();
+    if (!name) return alert("Enter a model name.");
+    fetch("save_model.php", { method:"POST", body: new URLSearchParams({ name }) })
+      .then(() => location.reload());
+  }
+
+  // ── Reset ──
+  function resetForm() {
+    document.getElementById("stockForm").reset();
+    document.getElementById("spareSearch").value = "";
+    document.getElementById("spareId").value     = "";
+    document.getElementById("oldStock").value    = 0;
+    document.getElementById("newStock").value    = 1;
+    document.getElementById("qtyInput").value    = 1;
+    document.getElementById("barcodePreview").style.display = "none";
+    document.getElementById("genBtn").disabled   = true;
+    clearSpareImage();
+    calc();
+  }
+
+  // ── Close dropdown on outside click ──
+  document.addEventListener("click", function(e) {
+    if (!e.target.closest(".search-wrap")) {
+      document.getElementById("spareList").style.display = "none";
+    }
+  });
+
+  // ── Close modal on overlay click ──
+  document.querySelectorAll(".modal-overlay").forEach(m => {
+    m.addEventListener("click", e => { if (e.target === m) m.style.display = "none"; });
+  });
+
 </script>
 
 <?php include("../includes/footer.php"); ?>
