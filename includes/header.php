@@ -407,9 +407,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <span class="menu-link">Purchase <span class="arrow">&#9660;</span></span>
                 <div class="dropdown">
                     <a href="../purchase/create.php" <?php echo ($current_page == 'create.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
-                        Create Purchase
+                        + Create Purchase
                     </a>
-                    <a href="../purchase/list.php" <?php echo ($current_page == 'list.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
+                    <a href="../purchase/purchase_list.php" <?php echo ($current_page == 'purchase_list.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
                         Purchase List
                     </a>
                 </div>

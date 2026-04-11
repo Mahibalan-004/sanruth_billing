@@ -34,12 +34,12 @@ $result = mysqli_query($conn, $query);
                         <?php $i = 1; while($row = mysqli_fetch_assoc($result)): ?>
                             <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#fbfcfe'" onmouseout="this.style.background='white'">
                                 <td style="padding: 15px; color: #94a3b8; font-size: 14px;"><?= $i++ ?></td>
-                                <td style="padding: 15px; color: #1e293b; font-weight: 600; font-size: 14px;"><?= htmlspecialchars($row['name']) ?></td>
+                                <td style="padding: 15px; color: #1e293b; font-weight: 600; font-size: 14px;"><?= htmlspecialchars($row['name'] ?? '') ?></td>
                                 <td style="padding: 15px;">
-                                    <div style="color: #1e293b; font-weight: 500; font-size: 14px;"><?= htmlspecialchars($row['phoneNo1']) ?></div>
-                                    <div style="color: #64748b; font-size: 12px;"><?= htmlspecialchars($row['emailId']) ?: '-' ?></div>
+                                    <div style="color: #1e293b; font-weight: 500; font-size: 14px;"><?= htmlspecialchars($row['phoneNo1'] ?? '') ?></div>
+                                    <div style="color: #64748b; font-size: 12px;"><?= htmlspecialchars($row['emailId'] ?? '') ?: '-' ?></div>
                                 </td>
-                                <td style="padding: 15px; color: #475569; font-size: 14px;"><?= htmlspecialchars($row['city']) ?: '-' ?></td>
+                                <td style="padding: 15px; color: #475569; font-size: 14px;"><?= htmlspecialchars($row['city'] ?? '') ?: '-' ?></td>
                                 <td style="padding: 15px;">
                                     <?php if ($row['active']): ?>
                                         <span style="color: #16a34a; font-weight: 700; font-size: 12px;">Active</span>

@@ -1,10 +1,7 @@
 <?php
-$conn = mysqli_connect("localhost", "root","", "billing");
+$conn = mysqli_connect("127.0.0.1", "root", "", "billing", 3306);
 
-// Check connection
 if (!$conn) {
-    die("Database connection failed: " . mysqli_connect_error());
-} else {
-    // Connection successful
+    die("Database connection failed: " . mysqli_connect_error( ));
 }
 ?>
