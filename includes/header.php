@@ -419,16 +419,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li class="menu-item has-dropdown">
                 <span class="menu-link">Customers <span class="arrow">&#9660;</span></span>
                 <div class="dropdown">
-                    <a href="../customers/add_customer.php" <?php echo ($current_page == 'add_customer.php') ? 'class="active-link"' : ''; ?>>
-                        + Add Customer
-                    </a>
-                    <a href="../customers/c_list.php" <?php echo ($current_page == 'c_list.php') ? 'class="active-link"' : ''; ?>>
+                    
+                    <a href="../customers/manage_customers.php" <?php echo ($current_page == 'manage_customers.php') ? 'class="active-link"' : ''; ?>>
                         Customer List
                     </a>
-                    <a href="../supplier/list.php" <?php echo ($current_page == 'list.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
+                    <a href="../supplier/manage_supplier.php" <?php echo ($current_page == 'manage_suppliers.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
                         Supplier List
                     </a>
-                    <a href="../supplier/add.php" <?php echo ($current_page == 'add.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
+                    <a href="../supplier/manage_supplier.php" <?php echo ($current_page == 'manage_suppliers.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
                         + Add Supplier
                     </a>
                 </div>

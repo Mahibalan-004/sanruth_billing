@@ -483,21 +483,27 @@ $successMsg = $_GET['success'] ?? '';
 
   // ── Spare Image Loader ──
   function loadSpareImage(picturePath, itemName) {
-    let img    = document.getElementById("spareImg");
-    let holder = document.getElementById("imgPlaceholder");
-    let lbl    = document.getElementById("imgLabel");
+  let img    = document.getElementById("spareImg");
+  let holder = document.getElementById("imgPlaceholder");
+  let lbl    = document.getElementById("imgLabel");
 
-    if (picturePath && picturePath !== 'no-image.png') {
-      img.src = "../" + picturePath;   // adjust path prefix to match your setup
-      img.style.display = "block";
-      holder.style.display = "none";
-    } else {
-      img.style.display = "none";
-      holder.style.display = "flex";
-      holder.querySelector('span').textContent = "No image";
-    }
-    lbl.textContent = itemName || "—";
+  console.log("Image path:", picturePath); // DEBUG
+
+  if (picturePath && picturePath !== 'no-image.png') {
+
+    // ✅ FIXED PATH
+    img.src = "/uploads/spares/" + picturePath;
+
+    img.style.display = "block";
+    holder.style.display = "none";
+  } else {
+    img.style.display = "none";
+    holder.style.display = "flex";
+    holder.querySelector('span').textContent = "No image";
   }
+
+  lbl.textContent = itemName || "—";
+}
 
   function clearSpareImage() {
     let img    = document.getElementById("spareImg");
