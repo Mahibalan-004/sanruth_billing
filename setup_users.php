@@ -23,7 +23,7 @@ if (mysqli_query($conn, $createTable)) {
 
 // 2. Add Default Admin User
 $username = "admin";
-$password = "admin123";
+$password = "admin";
 $role = "ADMIN";
 
 $check = mysqli_query($conn, "SELECT id FROM user WHERE username = '$username'");

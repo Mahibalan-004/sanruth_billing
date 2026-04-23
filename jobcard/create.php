@@ -105,7 +105,7 @@ $machines = mysqli_query($conn, "SELECT id, machineName FROM machine WHERE activ
 
                 <!-- RIGHT SIDE (LOGO PLACEHOLDER) -->
                 <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 10px;">
-                    <img src="https://via.placeholder.com/400x300?text=Sanruth+Machines+Logo" alt="SANRUTH MACHINES" style="max-width: 100%; height: auto; border-radius: 10px; max-height: 280px; object-fit: contain;">
+                    <img src="../img/logo.png" alt="SANRUTH MACHINES" style="max-width: 100%; height: auto; border-radius: 10px; max-height: 280px; object-fit: contain;">
                 </div>
             </div>
 

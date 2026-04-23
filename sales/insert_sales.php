@@ -56,8 +56,8 @@ if ($existingCustId > 0) {
     if ($chkRes && mysqli_num_rows($chkRes) > 0) {
         $customerId = $existingCustId;
         // Update customer info
-        $upd = mysqli_prepare($conn, "UPDATE customer SET name=?, whatsApp=?, addressLine1=?, city=?, phoneNo1=? WHERE id=?");
-        mysqli_stmt_bind_param($upd, "sssssi", $customerName, $whatsApp, $addressLine1, $city, $customerPhone, $customerId);
+        $upd = mysqli_prepare($conn, "UPDATE customer SET name=?, whatsAppNo=?, phoneNo1=? WHERE id=?");
+        mysqli_stmt_bind_param($upd, "sssi", $customerName, $whatsApp, $customerPhone, $customerId);
         mysqli_stmt_execute($upd);
     }
 }
@@ -70,13 +70,13 @@ if (!$customerId) {
     $res = mysqli_stmt_get_result($stmt);
     if ($row = mysqli_fetch_assoc($res)) {
         $customerId = $row['id'];
-        $upd = mysqli_prepare($conn, "UPDATE customer SET name=?, whatsApp=?, addressLine1=?, city=? WHERE id=?");
-        mysqli_stmt_bind_param($upd, "ssssi", $customerName, $whatsApp, $addressLine1, $city, $customerId);
+        $upd = mysqli_prepare($conn, "UPDATE customer SET name=?, whatsAppNo=? WHERE id=?");
+        mysqli_stmt_bind_param($upd, "ssi", $customerName, $whatsApp, $customerId);
         mysqli_stmt_execute($upd);
     } else {
         // Create new customer
-        $ins = mysqli_prepare($conn, "INSERT INTO customer (active, name, phoneNo1, whatsApp, addressLine1, city) VALUES (1,?,?,?,?,?)");
-        mysqli_stmt_bind_param($ins, "sssss", $customerName, $customerPhone, $whatsApp, $addressLine1, $city);
+        $ins = mysqli_prepare($conn, "INSERT INTO customer (active, name, phoneNo1, whatsAppNo) VALUES (1,?,?,?)");
+        mysqli_stmt_bind_param($ins, "sss", $customerName, $customerPhone, $whatsApp);
         mysqli_stmt_execute($ins);
         $customerId = mysqli_insert_id($conn);
         if (!$customerId) err("Failed to create customer");

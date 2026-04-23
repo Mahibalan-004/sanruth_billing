@@ -16,7 +16,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sanruth Billing</title>
     <!-- JsBarcode library -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
@@ -319,6 +319,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 margin-left: 15px;
                 box-shadow: none;
                 border: none;
+            }
+
+            /* Prevent iOS auto-zoom on form elements */
+            input, select, textarea {
+                font-size: 16px !important;
             }
         }
     </style>
