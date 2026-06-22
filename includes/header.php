@@ -32,7 +32,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
         body {
             font-family: 'Inter', Arial, sans-serif;
             background: #f4f6f9;
-            padding-top: 110px; /* Offset for fixed header */
+            padding-top: 110px;
+            /* Offset for fixed header */
             padding-bottom: 20px;
         }
 
@@ -69,6 +70,24 @@ $current_page = basename($_SERVER['PHP_SELF']);
             display: flex;
             align-items: center;
             gap: 12px;
+        }
+
+        .user-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .user-pill small {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 11px;
+            text-transform: uppercase;
         }
 
         .btn-logout {
@@ -112,8 +131,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
             position: relative;
         }
 
-        .menu-item > a,
-        .menu-item > .menu-link {
+        .menu-item>a,
+        .menu-item>.menu-link {
             display: flex;
             align-items: center;
             gap: 4px;
@@ -129,14 +148,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
             user-select: none;
         }
 
-        .menu-item > a:hover,
-        .menu-item > .menu-link:hover {
+        .menu-item>a:hover,
+        .menu-item>.menu-link:hover {
             color: #111827;
             border-bottom-color: #4ade80;
             background: #f9fafb;
         }
 
-        .menu-item > a.active-link {
+        .menu-item>a.active-link {
             color: #16a34a;
             border-bottom-color: #22c55e;
             font-weight: 600;
@@ -148,7 +167,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             display: inline-block;
         }
 
-        .menu-item.active > .menu-link .arrow {
+        .menu-item.active>.menu-link .arrow {
             transform: rotate(180deg);
         }
 
@@ -165,19 +184,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
             border-radius: 0 0 10px 10px;
             border: 1px solid #e5e7eb;
             border-top: none;
-            overflow: visible; /* Changed from hidden to show submenus */
+            overflow: visible;
+            /* Changed from hidden to show submenus */
         }
 
-        .menu-item.active > .dropdown,
-        .menu-item:hover > .dropdown {
+        .menu-item.active>.dropdown,
+        .menu-item:hover>.dropdown {
             display: block;
         }
 
-        .submenu:hover > .submenu-dropdown {
+        .submenu:hover>.submenu-dropdown {
             display: block;
         }
 
-        .dropdown > a {
+        .dropdown>a {
             padding: 10px 16px;
             display: block;
             color: #374151;
@@ -188,13 +208,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
             border-left: 3px solid transparent;
         }
 
-        .dropdown > a:hover {
+        .dropdown>a:hover {
             background: #f0fdf4;
             color: #16a34a;
             border-left-color: #4ade80;
         }
 
-        .dropdown > a.active-link {
+        .dropdown>a.active-link {
             background: #f0fdf4;
             color: #16a34a;
             border-left-color: #22c55e;
@@ -245,7 +265,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             overflow: hidden;
         }
 
-        .submenu.active > .submenu-dropdown {
+        .submenu.active>.submenu-dropdown {
             display: block;
         }
 
@@ -293,15 +313,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 display: flex;
             }
 
-            .menu-item > a,
-            .menu-item > .menu-link {
+            .menu-item>a,
+            .menu-item>.menu-link {
                 border-bottom: none;
                 border-left: 3px solid transparent;
                 padding: 12px 20px;
             }
 
-            .menu-item > a:hover,
-            .menu-item > .menu-link:hover {
+            .menu-item>a:hover,
+            .menu-item>.menu-link:hover {
                 border-bottom: none;
                 border-left-color: #4ade80;
             }
@@ -322,7 +342,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
             }
 
             /* Prevent iOS auto-zoom on form elements */
-            input, select, textarea {
+            input,
+            select,
+            textarea {
                 font-size: 16px !important;
             }
         }
@@ -338,6 +360,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </div>
         <div class="topbar-right">
             <button id="menuToggle" title="Toggle Menu">&#9776;</button>
+            <?php if (isset($_SESSION['employee_name']) || isset($_SESSION['username'])): ?>
+                <div class="user-pill">
+                    <?php if (isset($_SESSION['employee_name'])): ?>
+                        <span><?php echo htmlspecialchars($_SESSION['employee_name']); ?></span>
+                        <small>Employee</small>
+                    <?php else: ?>
+                        <span><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                        <small><?php echo htmlspecialchars($_SESSION['role'] ?? 'Admin'); ?></small>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
             <button class="btn-logout" onclick="window.location.href='../login/logout.php'">
                 Logout &#x2192;
             </button>
@@ -356,17 +389,19 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </li>
 
             <!-- STOCK -->
-            <li class="menu-item has-dropdown">
-                <span class="menu-link">Stock <span class="arrow">&#9660;</span></span>
-                <div class="dropdown">
-                    <a href="../stock/add_stock.php" <?php echo ($current_page == 'add_stock.php') ? 'class="active-link"' : ''; ?>>
-                        + Add Stock
-                    </a>
-                    <a href="../stock/list.php" <?php echo ($current_page == 'list.php' && strpos($_SERVER['PHP_SELF'], 'stock') !== false) ? 'class="active-link"' : ''; ?>>
-                        Stock List
-                    </a>
-                </div>
-            </li>
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
+                <li class="menu-item has-dropdown">
+                    <span class="menu-link">Stock <span class="arrow">&#9660;</span></span>
+                    <div class="dropdown">
+                        <a href="../stock/add_stock.php" <?php echo ($current_page == 'add_stock.php') ? 'class="active-link"' : ''; ?>>
+                            + Add Stock
+                        </a>
+                        <a href="../stock/list.php" <?php echo ($current_page == 'list.php' && strpos($_SERVER['PHP_SELF'], 'stock') !== false) ? 'class="active-link"' : ''; ?>>
+                            Stock List
+                        </a>
+                    </div>
+                </li>
+            <?php endif; ?>
 
             <!-- SPARES -->
             <li class="menu-item has-dropdown">
@@ -424,7 +459,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li class="menu-item has-dropdown">
                 <span class="menu-link">Customers <span class="arrow">&#9660;</span></span>
                 <div class="dropdown">
-                    
+
                     <a href="../customers/manage_customers.php" <?php echo ($current_page == 'manage_customers.php') ? 'class="active-link"' : ''; ?>>
                         Customer List
                     </a>
@@ -485,6 +520,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </a>
                 </div>
             </li>
+
+            <!-- USERS (Only for ADMIN) -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
+                <li class="menu-item">
+                    <a href="../users/manage_users.php" <?php echo ($current_page == 'manage_users.php') ? 'class="active-link"' : ''; ?>>
+                        Users
+                    </a>
+                </li>
+            <?php endif; ?>
 
         </ul>
     </div>

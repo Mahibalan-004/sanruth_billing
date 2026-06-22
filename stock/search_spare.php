@@ -3,6 +3,17 @@ require_once("../config/db.php");
 
 header('Content-Type: application/json');
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Only allow ADMIN to use stock-related AJAX search
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'ADMIN') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Access denied']);
+    exit();
+}
+
 $term = isset($_GET['term']) ? trim($_GET['term']) : '';
 
 if ($term === '') {

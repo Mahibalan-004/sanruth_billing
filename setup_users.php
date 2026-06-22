@@ -15,10 +15,10 @@ $createTable = "CREATE TABLE IF NOT EXISTS `user` (
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
-if (mysqli_query($conn, $createTable)) {
+if (mysqli_query($conn_login, $createTable)) {
     echo "<p style='color: #10b981;'>✅ Database table <b>'user'</b> is ready.</p>";
 } else {
-    echo "<p style='color: #ef4444;'>❌ Error creating table: " . mysqli_error($conn) . "</p>";
+    echo "<p style='color: #ef4444;'>❌ Error creating table: " . mysqli_error($conn_login) . "</p>";
 }
 
 // 2. Add Default Admin User
@@ -26,10 +26,10 @@ $username = "admin";
 $password = "admin";
 $role = "ADMIN";
 
-$check = mysqli_query($conn, "SELECT id FROM user WHERE username = '$username'");
+$check = mysqli_query($conn_login, "SELECT id FROM user WHERE username = '$username'");
 if (mysqli_num_rows($check) == 0) {
     $insert = "INSERT INTO user (username, password, role) VALUES ('$username', '$password', '$role')";
-    if (mysqli_query($conn, $insert)) {
+    if (mysqli_query($conn_login, $insert)) {
         echo "<p style='color: #10b981;'>✅ Default admin account created in 'user' table.</p>";
     }
 } else {
