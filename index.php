@@ -9,22 +9,20 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = "";
-$login_type = "admin";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $login_type = $_POST['login_type'] ?? 'admin';
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-    if ($login_type === 'admin') {
-        $username = mysqli_real_escape_string($conn_login, $username);
+    if ($username === '' || $password === '') {
+        $error = "Please enter both username/email and password.";
+    } else {
+        $usernameSafe = mysqli_real_escape_string($conn_login, $username);
 
-        // CHECK IF 'user' TABLE EXISTS AT ALL
+        // Try admin login first using the main admin table.
         $tableCheck = mysqli_query($conn_login, "SHOW TABLES LIKE 'user'");
-        if (mysqli_num_rows($tableCheck) == 0) {
-            $error = "System Error: Admin authentication table missing. <a href='setup_users.php' style='color:inherit; font-weight:bold;'>Click here to fix it.</a>";
-        } else {
-            $query = "SELECT * FROM user WHERE username = '$username' LIMIT 1";
+        if ($tableCheck && mysqli_num_rows($tableCheck) > 0) {
+            $query = "SELECT * FROM user WHERE username = '$usernameSafe' LIMIT 1";
             $result = mysqli_query($conn_login, $query);
 
             if ($result && mysqli_num_rows($result) > 0) {
@@ -37,17 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     header("Location: login/dashboard.php");
                     exit();
-                } else {
-                    $error = "Invalid admin username or password.";
                 }
-            } else {
-                $error = "Invalid admin username or password. <br><small>Tip: Run <a href='setup_users.php'>setup_users.php</a> to fix.</small>";
             }
         }
-    } else {
-        $username = mysqli_real_escape_string($conn, $username);
 
-        // Prefer the new `employee_auth` table; fall back to legacy `credential` table
+        // Fall back to employee credentials if admin login did not match.
         $userTable = null;
         $res1 = mysqli_query($conn, "SHOW TABLES LIKE 'employee_auth'");
         if ($res1 && mysqli_num_rows($res1) > 0) {
@@ -59,30 +51,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
 
-        if (!$userTable) {
-            $error = "System Error: Employee credentials table missing.";
-        } else {
-            $query = "SELECT * FROM {$userTable} WHERE username = '$username' LIMIT 1";
-            $result = mysqli_query($conn, $query);
+        if ($userTable) {
+            $employeeQuery = "SELECT * FROM {$userTable} WHERE username = '$usernameSafe' OR email = '$usernameSafe' LIMIT 1";
+            $employeeResult = mysqli_query($conn, $employeeQuery);
 
-            if ($result && mysqli_num_rows($result) > 0) {
-                $user = mysqli_fetch_assoc($result);
+            if ($employeeResult && mysqli_num_rows($employeeResult) > 0) {
+                $employee = mysqli_fetch_assoc($employeeResult);
 
-                // Employee password uses BCrypt hash verification or plaintext fallback
-                if (password_verify($password, $user['password']) || $password === $user['password']) {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['role'] = strtoupper($user['role'] ?? 'EMPLOYEE');
+                if (password_verify($password, $employee['password']) || $password === $employee['password']) {
+                    $_SESSION['user_id'] = $employee['id'];
+                    $_SESSION['username'] = $employee['username'] ?? $employee['email'] ?? $employee['name'];
+                    $_SESSION['role'] = strtoupper($employee['role'] ?? 'EMPLOYEE');
 
                     header("Location: login/dashboard.php");
                     exit();
-                } else {
-                    $error = "Invalid employee username or password.";
                 }
-            } else {
-                $error = "Invalid employee username or password.";
             }
         }
+
+        $error = "Invalid username/email or password.";
     }
 }
 ?>
@@ -321,23 +308,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php echo $error; ?>
             </div>
 
-            <div class="login-tabs" style="display: flex; margin-bottom: 25px; border-bottom: 2px solid #e5e7eb;">
-                <button type="button" id="tab-admin" onclick="setLoginType('admin')"
-                    style="flex: 1; padding: 12px; border: none; background: none; font-size: 15px; font-weight: 600; cursor: pointer; border-bottom: 3px solid <?php echo $login_type === 'admin' ? 'var(--primary-color)' : 'transparent'; ?>; color: <?php echo $login_type === 'admin' ? 'var(--primary-color)' : 'var(--text-muted)'; ?>; transition: all 0.3s; outline: none;">Admin
-                    Login</button>
-                <button type="button" id="tab-employee" onclick="setLoginType('employee')"
-                    style="flex: 1; padding: 12px; border: none; background: none; font-size: 15px; font-weight: 600; cursor: pointer; border-bottom: 3px solid <?php echo $login_type === 'employee' ? 'var(--primary-color)' : 'transparent'; ?>; color: <?php echo $login_type === 'employee' ? 'var(--primary-color)' : 'var(--text-muted)'; ?>; transition: all 0.3s; outline: none;">Employee
-                    Login</button>
+            <div style="margin-bottom: 20px; text-align: center; color: var(--text-muted); font-size: 14px;">
             </div>
 
             <form method="POST" action="">
-                <input type="hidden" name="login_type" id="login_type"
-                    value="<?php echo htmlspecialchars($login_type); ?>">
                 <div class="form-group">
-                    <label class="form-label">Username</label>
+                    <label class="form-label">Username / Email</label>
                     <div class="input-wrapper">
                         <span class="input-icon">👤</span>
-                        <input type="text" name="username" class="input-field" placeholder="Username" required
+                        <input type="text" name="username" class="input-field" placeholder="Username or Email" required
                             autofocus>
                     </div>
                 </div>
@@ -363,30 +342,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     var x = document.getElementById("password");
                     x.type = x.type === "password" ? "text" : "password";
                 }
-
-                function setLoginType(type) {
-                    document.getElementById('login_type').value = type;
-                    var tabAdmin = document.getElementById('tab-admin');
-                    var tabEmp = document.getElementById('tab-employee');
-                    var subtitle = document.querySelector('.subtitle');
-
-                    if (type === 'admin') {
-                        tabAdmin.style.borderBottom = '3px solid var(--primary-color)';
-                        tabAdmin.style.color = 'var(--primary-color)';
-                        tabEmp.style.borderBottom = '3px solid transparent';
-                        tabEmp.style.color = 'var(--text-muted)';
-                        subtitle.textContent = "Please enter admin credentials";
-                    } else {
-                        tabEmp.style.borderBottom = '3px solid var(--primary-color)';
-                        tabEmp.style.color = 'var(--primary-color)';
-                        tabAdmin.style.borderBottom = '3px solid transparent';
-                        tabAdmin.style.color = 'var(--text-muted)';
-                        subtitle.textContent = "Please enter employee credentials";
-                    }
-                }
-
-                // Set initially active tab state
-                setLoginType("<?php echo $login_type; ?>");
             </script>
 
             <div class="footer-text">

@@ -7,8 +7,16 @@ echo "<h2 style='color: #1e293b; margin-top: 0;'>⚙️ User Table Setup</h2>";
 // 1. Create 'user' Table (Requested Name)
 $createTable = "CREATE TABLE IF NOT EXISTS `user` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(20) DEFAULT NULL,
+  `phone_number_2` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `gender` varchar(50) DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
   `role` varchar(255) DEFAULT NULL,
   `createdOn` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
