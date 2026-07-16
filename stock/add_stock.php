@@ -7,6 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'ADMIN') {
     echo "<script>alert('Access denied: insufficient privileges'); window.location='../login/dashboard.php';</script>";
     exit();
+}
 ?>
 <?php include("../includes/header.php"); ?>
 
