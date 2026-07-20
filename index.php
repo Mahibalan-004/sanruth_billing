@@ -28,10 +28,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($result && mysqli_num_rows($result) > 0) {
                 $user = mysqli_fetch_assoc($result);
 
-                if ($password === $user['password']) {
+                // Support both hashed and plain-text passwords for admin users.
+                if ((isset($user['password']) && password_verify($password, $user['password'])) || $password === $user['password']) {
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = strtoupper($user['role'] ?? 'ADMIN');
+                    if ($_SESSION['role'] !== 'ADMIN') {
+                        $_SESSION['role'] = 'USER';
+                    }
 
                     header("Location: login/dashboard.php");
                     exit();
@@ -66,7 +70,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if (password_verify($password, $employee['password']) || $password === $employee['password']) {
                     $_SESSION['user_id'] = $employee['id'];
                     $_SESSION['username'] = $employee['username'] ?? $employee['email'] ?? $employee['name'];
+                    $_SESSION['employee_name'] = $employee['name'] ?? $_SESSION['username'];
                     $_SESSION['role'] = strtoupper($employee['role'] ?? 'EMPLOYEE');
+                    if ($_SESSION['role'] !== 'ADMIN') {
+                        $_SESSION['role'] = 'USER';
+                    }
 
                     header("Location: login/dashboard.php");
                     exit();

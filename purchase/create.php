@@ -1,5 +1,7 @@
-<?php 
+<?php
 require_once("../config/db.php");
+require_once("../includes/auth.php");
+requireAdmin();
 include("../includes/header.php");
 
 // Fetch suppliers for the dropdown
@@ -7,20 +9,22 @@ $suppliers = mysqli_query($conn, "SELECT id, name FROM supplier WHERE active = 1
 ?>
 
 <div style="padding: 20px; background: #f8fafc; min-height: calc(100vh - 110px);">
-    
+
     <!-- HEADER BAR -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0; color: #1e293b; font-size: 20px; font-weight: 700;">Create Purchase</h3>
-        <a href="list.php" style="text-decoration: none; color: #1e293b; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+        <a href="list.php"
+            style="text-decoration: none; color: #1e293b; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px;">
             <span>☰</span> Purchase List
         </a>
     </div>
 
     <!-- MAIN CONTENT CARD -->
-    <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 30px; border: 1px solid #e2e8f0;">
-        
+    <div
+        style="background: #fff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 30px; border: 1px solid #e2e8f0;">
+
         <form action="insert.php" method="POST">
-            
+
             <div class="form-grid">
                 <div class="form-group">
                     <label>Order Number <span class="required">*</span></label>
@@ -37,7 +41,7 @@ $suppliers = mysqli_query($conn, "SELECT id, name FROM supplier WHERE active = 1
                     <label>Supplier <span class="required">*</span></label>
                     <select name="supplier" required class="form-select">
                         <option value="">Select Supplier</option>
-                        <?php while($s = mysqli_fetch_assoc($suppliers)): ?>
+                        <?php while ($s = mysqli_fetch_assoc($suppliers)): ?>
                             <option value="<?= $s['id'] ?>"><?= $s['name'] ?></option>
                         <?php endwhile; ?>
                     </select>
@@ -54,7 +58,8 @@ $suppliers = mysqli_query($conn, "SELECT id, name FROM supplier WHERE active = 1
 
             <!-- AMOUNTS SECTION -->
             <div style="margin-top: 40px; margin-bottom: 20px; border-top: 1px solid #f1f5f9; padding-top: 25px;">
-                <h3 style="margin: 0 0 20px 0; color: #1e293b; font-size: 18px; font-weight: 700;">Financial Details</h3>
+                <h3 style="margin: 0 0 20px 0; color: #1e293b; font-size: 18px; font-weight: 700;">Financial Details
+                </h3>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px;">
@@ -91,10 +96,14 @@ $suppliers = mysqli_query($conn, "SELECT id, name FROM supplier WHERE active = 1
         margin-bottom: 8px;
         font-size: 14px;
     }
-    .required { color: #ef4444; }
+
+    .required {
+        color: #ef4444;
+    }
 
     /* INPUTS & SELECTS */
-    .form-group input, .form-select {
+    .form-group input,
+    .form-select {
         width: 100%;
         height: 42px;
         padding: 0 12px;
@@ -106,7 +115,9 @@ $suppliers = mysqli_query($conn, "SELECT id, name FROM supplier WHERE active = 1
         transition: 0.2s;
         font-family: inherit;
     }
-    .form-group input:focus, .form-select:focus {
+
+    .form-group input:focus,
+    .form-select:focus {
         outline: none;
         border-color: #2563eb;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -131,13 +142,16 @@ $suppliers = mysqli_query($conn, "SELECT id, name FROM supplier WHERE active = 1
         cursor: pointer;
         transition: 0.2s;
     }
+
     .prime-btn:hover {
         opacity: 0.9;
     }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-        .form-grid { grid-template-columns: 1fr; }
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 

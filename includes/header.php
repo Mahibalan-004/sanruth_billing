@@ -1,13 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Security Check: Redirect to login if user is not authenticated
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../index.php");
-    exit();
-}
+require_once(__DIR__ . '/auth.php');
+requireLogin();
 
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
@@ -407,9 +400,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <li class="menu-item has-dropdown">
                 <span class="menu-link">Spares <span class="arrow">&#9660;</span></span>
                 <div class="dropdown">
-                    <a href="../spares/add_spare.php" <?php echo ($current_page == 'add_spare.php') ? 'class="active-link"' : ''; ?>>
-                        + Add Spare
-                    </a>
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
+                        <a href="../spares/add_spare.php" <?php echo ($current_page == 'add_spare.php') ? 'class="active-link"' : ''; ?>>
+                            + Add Spare
+                        </a>
+                    <?php endif; ?>
                     <a href="../spares/list_spare.php" <?php echo ($current_page == 'list_spare.php') ? 'class="active-link"' : ''; ?>>
                         Spares List
                     </a>
@@ -443,83 +438,91 @@ $current_page = basename($_SERVER['PHP_SELF']);
             </li>
 
             <!-- PURCHASE -->
-            <li class="menu-item has-dropdown">
-                <span class="menu-link">Purchase <span class="arrow">&#9660;</span></span>
-                <div class="dropdown">
-                    <a href="../purchase/create.php" <?php echo ($current_page == 'create.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
-                        + Create Purchase
-                    </a>
-                    <a href="../purchase/purchase_list.php" <?php echo ($current_page == 'purchase_list.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
-                        Purchase List
-                    </a>
-                </div>
-            </li>
+            <?php if (isAdmin()): ?>
+                <li class="menu-item has-dropdown">
+                    <span class="menu-link">Purchase <span class="arrow">&#9660;</span></span>
+                    <div class="dropdown">
+                        <a href="../purchase/create.php" <?php echo ($current_page == 'create.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
+                            + Create Purchase
+                        </a>
+                        <a href="../purchase/purchase_list.php" <?php echo ($current_page == 'purchase_list.php' && strpos($_SERVER['PHP_SELF'], 'purchase') !== false) ? 'class="active-link"' : ''; ?>>
+                            Purchase List
+                        </a>
+                    </div>
+                </li>
+            <?php endif; ?>
 
             <!-- CUSTOMERS -->
-            <li class="menu-item has-dropdown">
-                <span class="menu-link">Customers <span class="arrow">&#9660;</span></span>
-                <div class="dropdown">
+            <?php if (isAdmin()): ?>
+                <li class="menu-item has-dropdown">
+                    <span class="menu-link">Customers <span class="arrow">&#9660;</span></span>
+                    <div class="dropdown">
 
-                    <a href="../customers/manage_customers.php" <?php echo ($current_page == 'manage_customers.php') ? 'class="active-link"' : ''; ?>>
-                        Customer List
-                    </a>
-                    <a href="../supplier/manage_supplier.php" <?php echo ($current_page == 'manage_suppliers.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
-                        Supplier List
-                    </a>
-                    <a href="../supplier/manage_supplier.php" <?php echo ($current_page == 'manage_suppliers.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
-                        + Add Supplier
-                    </a>
-                </div>
-            </li>
+                        <a href="../customers/manage_customers.php" <?php echo ($current_page == 'manage_customers.php') ? 'class="active-link"' : ''; ?>>
+                            Customer List
+                        </a>
+                        <a href="../supplier/manage_supplier.php" <?php echo ($current_page == 'manage_suppliers.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
+                            Supplier List
+                        </a>
+                        <a href="../supplier/manage_supplier.php" <?php echo ($current_page == 'manage_suppliers.php' && strpos($_SERVER['PHP_SELF'], 'supplier') !== false) ? 'class="active-link"' : ''; ?>>
+                            + Add Supplier
+                        </a>
+                    </div>
+                </li>
+            <?php endif; ?>
 
             <!-- MASTER -->
-            <li class="menu-item has-dropdown">
-                <span class="menu-link">Master <span class="arrow">&#9660;</span></span>
-                <div class="dropdown">
+            <?php if (isAdmin()): ?>
+                <li class="menu-item has-dropdown">
+                    <span class="menu-link">Master <span class="arrow">&#9660;</span></span>
+                    <div class="dropdown">
 
-                    <div class="submenu">
-                        <span class="submenu-link">Brand &#9654;</span>
-                        <div class="submenu-dropdown">
-                            <a href="../brand/add.php">+ Add Brand</a>
-                            <a href="../brand/list.php">Brand List</a>
+                        <div class="submenu">
+                            <span class="submenu-link">Brand &#9654;</span>
+                            <div class="submenu-dropdown">
+                                <a href="../brand/add.php">+ Add Brand</a>
+                                <a href="../brand/list.php">Brand List</a>
+                            </div>
                         </div>
-                    </div>
 
-                    <hr class="dropdown-divider">
+                        <hr class="dropdown-divider">
 
-                    <div class="submenu">
-                        <span class="submenu-link">Model &#9654;</span>
-                        <div class="submenu-dropdown">
-                            <a href="../model/add.php">+ Add Model</a>
-                            <a href="../model/list.php">Model List</a>
+                        <div class="submenu">
+                            <span class="submenu-link">Model &#9654;</span>
+                            <div class="submenu-dropdown">
+                                <a href="../model/add.php">+ Add Model</a>
+                                <a href="../model/list.php">Model List</a>
+                            </div>
                         </div>
-                    </div>
 
-                    <hr class="dropdown-divider">
+                        <hr class="dropdown-divider">
 
-                    <div class="submenu">
-                        <span class="submenu-link">Machine &#9654;</span>
-                        <div class="submenu-dropdown">
-                            <a href="../machine/add_machine.php">+ Add Machine</a>
-                            <a href="../machine/list_machine.php">Machine List</a>
+                        <div class="submenu">
+                            <span class="submenu-link">Machine &#9654;</span>
+                            <div class="submenu-dropdown">
+                                <a href="../machine/add_machine.php">+ Add Machine</a>
+                                <a href="../machine/list_machine.php">Machine List</a>
+                            </div>
                         </div>
-                    </div>
 
-                </div>
-            </li>
+                    </div>
+                </li>
+            <?php endif; ?>
 
             <!-- REPORTS -->
-            <li class="menu-item has-dropdown">
-                <span class="menu-link">Reports <span class="arrow">&#9660;</span></span>
-                <div class="dropdown">
-                    <a href="../report/daily_sales.php" <?php echo ($current_page == 'daily_sales.php') ? 'class="active-link"' : ''; ?>>
-                        Daily Sales
-                    </a>
-                    <a href="../report/monthly_sales.php" <?php echo ($current_page == 'monthly_sales.php') ? 'class="active-link"' : ''; ?>>
-                        Monthly Sales
-                    </a>
-                </div>
-            </li>
+            <?php if (isAdmin()): ?>
+                <li class="menu-item has-dropdown">
+                    <span class="menu-link">Reports <span class="arrow">&#9660;</span></span>
+                    <div class="dropdown">
+                        <a href="../report/daily_sales.php" <?php echo ($current_page == 'daily_sales.php') ? 'class="active-link"' : ''; ?>>
+                            Daily Sales
+                        </a>
+                        <a href="../report/monthly_sales.php" <?php echo ($current_page == 'monthly_sales.php') ? 'class="active-link"' : ''; ?>>
+                            Monthly Sales
+                        </a>
+                    </div>
+                </li>
+            <?php endif; ?>
 
             <!-- USERS (Only for ADMIN) -->
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>

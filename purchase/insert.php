@@ -1,16 +1,18 @@
-<?php 
+<?php
 require_once("../config/db.php");
+require_once("../includes/auth.php");
+requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $orderNo = mysqli_real_escape_string($conn, $_POST['orderNo']);
     $orderDate = mysqli_real_escape_string($conn, $_POST['orderDate']);
-    $supplierId = (int)$_POST['supplier'];
+    $supplierId = (int) $_POST['supplier'];
     $orderStatus = mysqli_real_escape_string($conn, $_POST['orderStatus']);
-    
-    $quoteAmountSum = (float)$_POST['quoteAmountSum'];
-    $actualAmountSum = (float)$_POST['actualAmountSum'];
-    $paidAmountSum = (float)$_POST['paidAmountSum'];
-    
+
+    $quoteAmountSum = (float) $_POST['quoteAmountSum'];
+    $actualAmountSum = (float) $_POST['actualAmountSum'];
+    $paidAmountSum = (float) $_POST['paidAmountSum'];
+
     $createdOn = date('Y-m-d H:i:s');
     $createdBy = "System Admin"; // Should ideally come from $_SESSION['user_name']
 

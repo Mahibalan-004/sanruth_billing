@@ -1,6 +1,8 @@
 <?php
 // supplier_save.php – Insert or Update supplier + address (plain mysqli queries)
 require_once("../config/db.php");
+require_once("../includes/auth.php");
+requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: manage_suppliers.php');
@@ -8,24 +10,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // ── Read and sanitize POST values ──
-$id         = isset($_POST['id'])         ? (int)$_POST['id']         : 0;
-$address_id = isset($_POST['address_id']) ? (int)$_POST['address_id'] : 0;
+$id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+$address_id = isset($_POST['address_id']) ? (int) $_POST['address_id'] : 0;
 
-$name       = $conn->real_escape_string(trim($_POST['name']       ?? ''));
-$phoneNo1   = $conn->real_escape_string(trim($_POST['phoneNo1']   ?? ''));
-$phoneNo2   = $conn->real_escape_string(trim($_POST['phoneNo2']   ?? ''));
+$name = $conn->real_escape_string(trim($_POST['name'] ?? ''));
+$phoneNo1 = $conn->real_escape_string(trim($_POST['phoneNo1'] ?? ''));
+$phoneNo2 = $conn->real_escape_string(trim($_POST['phoneNo2'] ?? ''));
 $whatsAppNo = $conn->real_escape_string(trim($_POST['whatsAppNo'] ?? ''));
-$emailId    = $conn->real_escape_string(trim($_POST['emailId']    ?? ''));
-$active     = isset($_POST['active']) ? 1 : 0;
+$emailId = $conn->real_escape_string(trim($_POST['emailId'] ?? ''));
+$active = isset($_POST['active']) ? 1 : 0;
 
-$line1   = $conn->real_escape_string(trim($_POST['line1']   ?? ''));
-$line2   = $conn->real_escape_string(trim($_POST['line2']   ?? ''));
-$city    = $conn->real_escape_string(trim($_POST['city']    ?? ''));
+$line1 = $conn->real_escape_string(trim($_POST['line1'] ?? ''));
+$line2 = $conn->real_escape_string(trim($_POST['line2'] ?? ''));
+$city = $conn->real_escape_string(trim($_POST['city'] ?? ''));
 $zipCode = $conn->real_escape_string(trim($_POST['zipCode'] ?? ''));
 
-$now        = date('Y-m-d H:i:s');
+$now = date('Y-m-d H:i:s');
 $modifiedBy = 'System Admin';
-$createdBy  = 'System Admin';
+$createdBy = 'System Admin';
 
 // ══════════════════════════════════════════
 //  UPSERT ADDRESS

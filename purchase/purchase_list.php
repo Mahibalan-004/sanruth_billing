@@ -1,4 +1,6 @@
 <?php require_once("../config/db.php"); ?>
+<?php require_once("../includes/auth.php"); ?>
+<?php requireAdmin(); ?>
 <?php include("../includes/header.php"); ?>
 
 <div class="container">

@@ -1,5 +1,7 @@
 <?php
 require_once("../config/db.php");
+require_once("../includes/auth.php");
+requireAdmin();
 
 // Excel Export
 if (isset($_GET['export']) && $_GET['export'] === 'excel') {
@@ -46,36 +48,40 @@ $total_query = "
 $total_res = mysqli_query($conn, $total_query);
 $totals = mysqli_fetch_assoc($total_res);
 
-$total_orders  = (int)($totals['total_orders'] ?? 0);
-$total_sales   = (float)($totals['total_sales'] ?? 0);
-$total_paid    = (float)($totals['total_paid'] ?? 0);
+$total_orders = (int) ($totals['total_orders'] ?? 0);
+$total_sales = (float) ($totals['total_sales'] ?? 0);
+$total_paid = (float) ($totals['total_paid'] ?? 0);
 $total_balance = $total_sales - $total_paid;
 ?>
 
 <div style="padding:20px; background:#f8fafc; min-height:calc(100vh - 110px);">
 
     <?php if (!isset($_GET['export'])): ?>
-    <div class="no-print" style="background:#2563eb; min-height:60px; display:flex; align-items:center; justify-content:space-between; border-radius:10px 10px 0 0; padding:12px 20px; gap:15px; flex-wrap:wrap;">
-        <div style="color:#fff; font-weight:700; font-size:20px;">Daily Sales Full Report</div>
+        <div class="no-print"
+            style="background:#2563eb; min-height:60px; display:flex; align-items:center; justify-content:space-between; border-radius:10px 10px 0 0; padding:12px 20px; gap:15px; flex-wrap:wrap;">
+            <div style="color:#fff; font-weight:700; font-size:20px;">Daily Sales Full Report</div>
 
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <form method="GET" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <input type="date" name="date" value="<?= htmlspecialchars($filter_date) ?>" style="padding:8px 12px; border-radius:6px; border:1px solid #dbeafe; outline:none;">
-                <button type="submit" style="background:#fff; color:#2563eb; padding:8px 16px; border-radius:6px; font-weight:700; border:none; cursor:pointer;">
-                    Filter
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <form method="GET" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <input type="date" name="date" value="<?= htmlspecialchars($filter_date) ?>"
+                        style="padding:8px 12px; border-radius:6px; border:1px solid #dbeafe; outline:none;">
+                    <button type="submit"
+                        style="background:#fff; color:#2563eb; padding:8px 16px; border-radius:6px; font-weight:700; border:none; cursor:pointer;">
+                        Filter
+                    </button>
+                </form>
+
+                <button onclick="window.print()"
+                    style="background:#fff; color:#111827; padding:8px 14px; border-radius:6px; border:none; cursor:pointer; font-weight:700;">
+                    PDF
                 </button>
-            </form>
 
-            <button onclick="window.print()" style="background:#fff; color:#111827; padding:8px 14px; border-radius:6px; border:none; cursor:pointer; font-weight:700;">
-                PDF
-            </button>
-
-            <a href="?date=<?= urlencode($filter_date) ?>&export=excel"
-               style="background:#16a34a; color:#fff; padding:8px 14px; border-radius:6px; text-decoration:none; font-weight:700;">
-                Excel
-            </a>
+                <a href="?date=<?= urlencode($filter_date) ?>&export=excel"
+                    style="background:#16a34a; color:#fff; padding:8px 14px; border-radius:6px; text-decoration:none; font-weight:700;">
+                    Excel
+                </a>
+            </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <div style="background:#fff; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 12px 12px; padding:24px;">
@@ -87,25 +93,32 @@ $total_balance = $total_sales - $total_paid;
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px; margin-bottom:24px;">
+        <div
+            style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px; margin-bottom:24px;">
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
-                <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Total Orders</div>
+                <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Total Orders
+                </div>
                 <div style="font-size:26px; font-weight:700; color:#111827; margin-top:6px;"><?= $total_orders ?></div>
             </div>
 
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
                 <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Total Sales</div>
-                <div style="font-size:26px; font-weight:700; color:#111827; margin-top:6px;">₹<?= number_format($total_sales, 2) ?></div>
+                <div style="font-size:26px; font-weight:700; color:#111827; margin-top:6px;">
+                    ₹<?= number_format($total_sales, 2) ?></div>
             </div>
 
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
-                <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Collected Amount</div>
-                <div style="font-size:26px; font-weight:700; color:#16a34a; margin-top:6px;">₹<?= number_format($total_paid, 2) ?></div>
+                <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Collected Amount
+                </div>
+                <div style="font-size:26px; font-weight:700; color:#16a34a; margin-top:6px;">
+                    ₹<?= number_format($total_paid, 2) ?></div>
             </div>
 
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px;">
-                <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Pending Balance</div>
-                <div style="font-size:26px; font-weight:700; color:#ef4444; margin-top:6px;">₹<?= number_format($total_balance, 2) ?></div>
+                <div style="font-size:12px; text-transform:uppercase; color:#64748b; font-weight:700;">Pending Balance
+                </div>
+                <div style="font-size:26px; font-weight:700; color:#ef4444; margin-top:6px;">
+                    ₹<?= number_format($total_balance, 2) ?></div>
             </div>
         </div>
 
@@ -128,19 +141,20 @@ $total_balance = $total_sales - $total_paid;
                 <tbody>
                     <?php if ($result && mysqli_num_rows($result) > 0): ?>
                         <?php $i = 1; ?>
-                        <?php while($row = mysqli_fetch_assoc($result)): ?>
+                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
                             <?php
-                                $customer_name = !empty($row['customer_name']) ? $row['customer_name'] : 'CASH BILL';
-                                $contact_no    = !empty($row['contact_no']) ? $row['contact_no'] : '-';
-                                $billed_amt    = (float)$row['actualAmountSum'];
-                                $paid_amt      = (float)$row['paidAmountSum'];
-                                $balance_amt   = $billed_amt - $paid_amt;
-                                $status        = !empty($row['orderStatus']) ? $row['orderStatus'] : 'New';
-                                $row_bg        = ($i % 2 == 0) ? '#f9fafb' : '#ffffff';
+                            $customer_name = !empty($row['customer_name']) ? $row['customer_name'] : 'CASH BILL';
+                            $contact_no = !empty($row['contact_no']) ? $row['contact_no'] : '-';
+                            $billed_amt = (float) $row['actualAmountSum'];
+                            $paid_amt = (float) $row['paidAmountSum'];
+                            $balance_amt = $billed_amt - $paid_amt;
+                            $status = !empty($row['orderStatus']) ? $row['orderStatus'] : 'New';
+                            $row_bg = ($i % 2 == 0) ? '#f9fafb' : '#ffffff';
                             ?>
                             <tr style="background: <?= $row_bg ?>;">
                                 <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;"><?= $i++ ?></td>
-                                <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:700; color:<?= ($status === 'Invoiced' || $status === 'Completed') ? '#16a34a' : '#f59e0b' ?>;">
+                                <td
+                                    style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:700; color:<?= ($status === 'Invoiced' || $status === 'Completed') ? '#16a34a' : '#f59e0b' ?>;">
                                     <?= htmlspecialchars($status) ?>
                                 </td>
                                 <td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">
@@ -149,7 +163,8 @@ $total_balance = $total_sales - $total_paid;
                                 <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:700;">
                                     <?= htmlspecialchars($row['orderNo'] ?: '-') ?>
                                 </td>
-                                <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:600; word-break:break-word;">
+                                <td
+                                    style="border:1px solid #cbd5e1; padding:8px; text-align:center; font-weight:600; word-break:break-word;">
                                     <?= htmlspecialchars($customer_name) ?>
                                 </td>
                                 <td style="border:1px solid #cbd5e1; padding:8px; text-align:center; word-break:break-word;">
@@ -158,17 +173,20 @@ $total_balance = $total_sales - $total_paid;
                                 <td style="border:1px solid #cbd5e1; padding:8px; text-align:right; font-weight:700;">
                                     <?= number_format($billed_amt, 2) ?>
                                 </td>
-                                <td style="border:1px solid #cbd5e1; padding:8px; text-align:right; font-weight:700; color:#16a34a;">
+                                <td
+                                    style="border:1px solid #cbd5e1; padding:8px; text-align:right; font-weight:700; color:#16a34a;">
                                     <?= number_format($paid_amt, 2) ?>
                                 </td>
-                                <td style="border:1px solid #cbd5e1; padding:8px; text-align:right; font-weight:700; color:#ef4444; min-width:100px;">
+                                <td
+                                    style="border:1px solid #cbd5e1; padding:8px; text-align:right; font-weight:700; color:#ef4444; min-width:100px;">
                                     <?= number_format($balance_amt, 2) ?>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="9" style="border:1px solid #cbd5e1; padding:24px; text-align:center; color:#64748b;">
+                            <td colspan="9"
+                                style="border:1px solid #cbd5e1; padding:24px; text-align:center; color:#64748b;">
                                 No sales found for this date.
                             </td>
                         </tr>
@@ -177,16 +195,19 @@ $total_balance = $total_sales - $total_paid;
 
                 <tfoot>
                     <tr style="background:#f8fafc;">
-                        <td colspan="6" style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700;">
+                        <td colspan="6"
+                            style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700;">
                             Grand Total
                         </td>
                         <td style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700;">
                             <?= number_format($total_sales, 2) ?>
                         </td>
-                        <td style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700; color:#16a34a;">
+                        <td
+                            style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700; color:#16a34a;">
                             <?= number_format($total_paid, 2) ?>
                         </td>
-                        <td style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700; color:#ef4444;">
+                        <td
+                            style="border:1px solid #94a3b8; padding:10px; text-align:right; font-weight:700; color:#ef4444;">
                             <?= number_format($total_balance, 2) ?>
                         </td>
                     </tr>
@@ -197,78 +218,115 @@ $total_balance = $total_sales - $total_paid;
 </div>
 
 <?php if (!isset($_GET['export'])): ?>
-<?php include("../includes/footer.php"); ?>
+    <?php include("../includes/footer.php"); ?>
 
-<style>
-@media print {
-    .topbar,
-    .menu-container,
-    .no-print,
-    .btn,
-    .link {
-        display: none !important;
-    }
+    <style>
+        @media print {
 
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-        font-size: 10px !important;
-    }
+            .topbar,
+            .menu-container,
+            .no-print,
+            .btn,
+            .link {
+                display: none !important;
+            }
 
-    .container,
-    .content,
-    .wrapper,
-    .card {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                font-size: 10px !important;
+            }
 
-    table {
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-        table-layout: fixed !important;
-        border-collapse: collapse !important;
-        page-break-inside: auto;
-    }
+            .container,
+            .content,
+            .wrapper,
+            .card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
 
-    thead {
-        display: table-header-group;
-    }
+            table {
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                table-layout: fixed !important;
+                border-collapse: collapse !important;
+                page-break-inside: auto;
+            }
 
-    tr {
-        page-break-inside: avoid !important;
-        page-break-after: auto;
-    }
+            thead {
+                display: table-header-group;
+            }
 
-    th, td {
-        border: 1px solid #000 !important;
-        padding: 4px !important;
-        font-size: 9px !important;
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: normal !important;
-    }
+            tr {
+                page-break-inside: avoid !important;
+                page-break-after: auto;
+            }
 
-    th:nth-child(1), td:nth-child(1) { width: 5% !important; }
-    th:nth-child(2), td:nth-child(2) { width: 10% !important; }
-    th:nth-child(3), td:nth-child(3) { width: 10% !important; }
-    th:nth-child(4), td:nth-child(4) { width: 14% !important; }
-    th:nth-child(5), td:nth-child(5) { width: 18% !important; }
-    th:nth-child(6), td:nth-child(6) { width: 14% !important; }
-    th:nth-child(7), td:nth-child(7) { width: 10% !important; }
-    th:nth-child(8), td:nth-child(8) { width: 10% !important; }
-    th:nth-child(9), td:nth-child(9) { width: 9% !important; }
+            th,
+            td {
+                border: 1px solid #000 !important;
+                padding: 4px !important;
+                font-size: 9px !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                white-space: normal !important;
+            }
 
-    @page {
-        size: A4 landscape;
-        margin: 10mm;
-    }
-}
-</style>
+            th:nth-child(1),
+            td:nth-child(1) {
+                width: 5% !important;
+            }
+
+            th:nth-child(2),
+            td:nth-child(2) {
+                width: 10% !important;
+            }
+
+            th:nth-child(3),
+            td:nth-child(3) {
+                width: 10% !important;
+            }
+
+            th:nth-child(4),
+            td:nth-child(4) {
+                width: 14% !important;
+            }
+
+            th:nth-child(5),
+            td:nth-child(5) {
+                width: 18% !important;
+            }
+
+            th:nth-child(6),
+            td:nth-child(6) {
+                width: 14% !important;
+            }
+
+            th:nth-child(7),
+            td:nth-child(7) {
+                width: 10% !important;
+            }
+
+            th:nth-child(8),
+            td:nth-child(8) {
+                width: 10% !important;
+            }
+
+            th:nth-child(9),
+            td:nth-child(9) {
+                width: 9% !important;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+        }
+    </style>
 <?php endif; ?>

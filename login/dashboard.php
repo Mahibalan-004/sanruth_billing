@@ -5,7 +5,9 @@ include("../includes/header.php");
 // STATS
 $stockCount = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM stock"))['c'];
 $spareCount = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as c FROM spares"))['c'];
-$lowStockRes = mysqli_query($conn, "SELECT * FROM stock WHERE availableQty < quantity LIMIT 5"); // If quantity field means minQty?
+// Find low-stock items where available quantity is less than or equal to threshold (10)
+$lowStockRes = mysqli_query($conn, "SELECT st.*, s.spareName FROM stock st LEFT JOIN spares s ON st.spare = s.id WHERE st.availableQty <= 10 ORDER BY st.availableQty ASC LIMIT 10");
+$lowStockCount = $lowStockRes ? mysqli_num_rows($lowStockRes) : 0;
 ?>
 
 <div class="dashboard-grid"
@@ -32,9 +34,13 @@ $lowStockRes = mysqli_query($conn, "SELECT * FROM stock WHERE availableQty < qua
         <h4 style="color:#64748b; font-size:12px; text-transform:uppercase; margin-bottom: 5px;">Spare Part Types</h4>
         <div style="font-size:32px; font-weight:800; color:#1e293b;"><?= number_format($spareCount) ?></div>
         <div style="margin-top: 15px;">
-            <a href="../spares/list_spare.php"
-                style="color:#10b981; text-decoration:none; font-size: 13px; font-weight: 600;">Browse Master Data
-                &rarr;</a>
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
+                <a href="../spares/add_spare.php"
+                    style="color:#10b981; text-decoration:none; font-size: 13px; font-weight: 600;">Browse Master Data
+                    &rarr;</a>
+            <?php else: ?>
+                <span style="color:#64748b; font-size: 13px; font-weight: 600;">Admin only</span>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -58,33 +64,37 @@ $lowStockRes = mysqli_query($conn, "SELECT * FROM stock WHERE availableQty < qua
 
 </div>
 
-<div style="width: 95%; margin: 0 auto 50px; padding: 0 30px;">
-    <h3 style="margin-bottom: 20px; color:#334155;">Quick Menu</h3>
-    <div
-        style="background:#fff; padding: 40px; border-radius: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
-            <a href="../stock/add_stock.php"
-                style="text-align:center; padding: 20px; border: 1px solid #f1f5f9; border-radius: 12px; text-decoration:none; transition: transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                <span style="font-size:30px; display:block; margin-bottom:10px;">📦</span>
-                <span style="color:#475569; font-weight:600;">Add Stock</span>
-            </a>
-        <?php endif; ?>
-        <a href="../spares/add_spare.php"
-            style="text-align:center; padding: 20px; border: 1px solid #f1f5f9; border-radius: 12px; text-decoration:none; transition: transform 0.2s;"
-            onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-            <span style="font-size:30px; display:block; margin-bottom:10px;">⚙️</span>
-            <span style="color:#475569; font-weight:600;">New Spare</span>
-        </a>
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
-            <a href="../stock/list.php"
-                style="text-align:center; padding: 20px; border: 1px solid #f1f5f9; border-radius: 12px; text-decoration:none; transition: transform 0.2s;"
-                onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                <span style="font-size:30px; display:block; margin-bottom:10px;">📑</span>
-                <span style="color:#475569; font-weight:600;">Inventory List</span>
-            </a>
-        <?php endif; ?>
+<?php if ($lowStockCount > 0): ?>
+    <div style="width:95%; margin: 20px auto;">
+        <div
+            style="background:#fff; padding:20px; border-radius:12px; border-left:5px solid #f97316; box-shadow:0 4px 6px rgba(0,0,0,0.04);">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:20px;">
+                <div>
+                    <h3 style="margin:0 0 6px 0; color:#b45309;">Low Stock Alert</h3>
+                    <div style="color:#475569; font-size:14px;">There are <strong
+                            style="color:#111;"><?= $lowStockCount ?></strong> items with available quantity at or below
+                        <strong>10</strong>.</div>
+                </div>
+                <div>
+                    <a href="../stock/list.php"
+                        style="background:#f97316; color:#fff; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:600;">View
+                        Inventory</a>
+                </div>
+            </div>
+
+            <div
+                style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:10px;">
+                <?php while ($r = mysqli_fetch_assoc($lowStockRes)): ?>
+                    <div style="padding:8px; border-radius:8px; background:#fff7ed; border:1px solid #ffedd5;">
+                        <div style="font-weight:700; color:#92400e;"><?= htmlspecialchars($r['spareName'] ?? 'Item') ?></div>
+                        <div style="font-size:13px; color:#475569;">Available: <strong><?= (int) $r['availableQty'] ?></strong>
+                        </div>
+                        <div style="font-size:13px; color:#475569;">Part: <?= htmlspecialchars($r['partNo'] ?? '-') ?></div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        </div>
     </div>
-</div>
+<?php endif; ?>
 
 <?php include("../includes/footer.php"); ?>

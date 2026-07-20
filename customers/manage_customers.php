@@ -1,6 +1,8 @@
 <?php
 // manage_customers.php
 require_once("../config/db.php");
+require_once("../includes/auth.php");
+requireAdmin();
 include("../includes/header.php");
 
 $limit = 10;
