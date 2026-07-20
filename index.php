@@ -52,7 +52,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if ($userTable) {
-            $employeeQuery = "SELECT * FROM {$userTable} WHERE username = '$usernameSafe' OR email = '$usernameSafe' LIMIT 1";
+            $employeeQuery = "SELECT * FROM {$userTable} WHERE username = '$usernameSafe' LIMIT 1";
+            $emailColumn = mysqli_query($conn, "SHOW COLUMNS FROM {$userTable} LIKE 'email'");
+            if ($emailColumn && mysqli_num_rows($emailColumn) > 0) {
+                $employeeQuery = "SELECT * FROM {$userTable} WHERE username = '$usernameSafe' OR email = '$usernameSafe' LIMIT 1";
+            }
+
             $employeeResult = mysqli_query($conn, $employeeQuery);
 
             if ($employeeResult && mysqli_num_rows($employeeResult) > 0) {

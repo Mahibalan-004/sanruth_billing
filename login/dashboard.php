@@ -44,9 +44,15 @@ $lowStockRes = mysqli_query($conn, "SELECT * FROM stock WHERE availableQty < qua
         <h4 style="color:#64748b; font-size:12px; text-transform:uppercase; margin-bottom: 5px;">Daily Action</h4>
         <div style="font-size:18px; font-weight:700; color:#1e293b; margin-top:5px;">Ready to Bill</div>
         <div style="margin-top: 15px;">
-            <a href="../stock/add_stock.php"
-                style="background:#8b5cf6; color:white; padding: 6px 12px; border-radius: 6px; text-decoration:none; font-size: 12px; font-weight: 600;">Add
-                to Stock</a>
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'ADMIN'): ?>
+                <a href="../stock/add_stock.php"
+                    style="background:#8b5cf6; color:white; padding: 6px 12px; border-radius: 6px; text-decoration:none; font-size: 12px; font-weight: 600;">Add
+                    to Stock</a>
+            <?php else: ?>
+                <span
+                    style="display:inline-block; background:#e2e8f0; color:#475569; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Admin
+                    only</span>
+            <?php endif; ?>
         </div>
     </div>
 
