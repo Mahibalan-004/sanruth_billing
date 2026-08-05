@@ -310,6 +310,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="blob"></div>
 
     <div class="login-container">
+    
+    
         <div class="login-card">
             <div class="logo-section">
                 <div class="logo-container">⚙️</div>

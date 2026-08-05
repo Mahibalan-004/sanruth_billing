@@ -64,6 +64,7 @@ if (!$result) {
                     <th colspan="2" style="text-align: center; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b;">Customer</th>
                     <th colspan="3" style="text-align: center; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b;">Date</th>
                     <th colspan="2" style="text-align: center; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b; background: #dcfce7; border-left: 1px solid #e2e8f0;">Amount</th>
+                    <th rowspan="2" style="padding: 12px 15px; border-bottom: 2px solid #e2e8f0; font-size: 14px; color: #1e293b; text-align: center;">Action</th>
                 </tr>
                 <tr style="background: #f8fafc;">
                     <th style="padding: 12px 15px; border-bottom: 2px solid #e2e8f0; font-size: 14px; color: #1e293b; border-right: 1px solid #e2e8f0;">Name</th>
@@ -81,6 +82,9 @@ if (!$result) {
                 while($row = mysqli_fetch_assoc($result)): 
                     $rowBg = ($counter % 2 == 0) ? '#f8fafc' : '#ffffff';
                     
+                    // Format Card No without slashes or spaces
+                    $cleanCardNo = str_replace(['/', ' '], '', $row['cardNo'] ?? '');
+
                     // Format Dates
                     $givenDate = !empty($row['givenDate']) ? htmlspecialchars($row['givenDate']) : '-';
                     $completed = (!empty($row['completed']) && $row['completed'] != '0') ? htmlspecialchars($row['completed']) : '-';
@@ -101,15 +105,15 @@ if (!$result) {
                     <td style="padding: 12px 15px; font-size: 14px; color: #334155;"><?= $counter++ ?></td>
                     <td style="padding: 12px 15px; font-size: 14px; color: #334155;">Offsite</td>
                     <td style="padding: 12px 15px; font-size: 14px;">
-                        <a href="#" style="color: #3b82f6; text-decoration: underline;"><?= htmlspecialchars($row['cardNo']) ?></a>
+                        <a href="edit.php?id=<?= $row['id'] ?>" style="color: #2563eb; text-decoration: underline; font-weight: 700;"><?= htmlspecialchars($cleanCardNo) ?></a>
                     </td>
                     <td style="padding: 0; font-size: 14px; text-align: center;">
                         <?php if($status == 'New' || $status == 'New Job'): ?>
-                            <div style="background: #ef4444; color: #fff; padding: 12px 15px; height: 100%; display: flex; align-items: center; justify-content: center; min-height: 50px;">
+                            <div style="background: #ef4444; color: #fff; padding: 12px 15px; height: 100%; display: flex; align-items: center; justify-content: center; min-height: 50px; font-weight: 600;">
                                 <?= $statusDisplay ?>
                             </div>
                         <?php else: ?>
-                            <div style="padding: 12px 15px;">
+                            <div style="padding: 12px 15px; font-weight: 600;">
                                 <?= $statusDisplay ?>
                             </div>
                         <?php endif; ?>
@@ -123,12 +127,17 @@ if (!$result) {
                     <td style="padding: 12px 15px; font-size: 14px; color: #334155; background: #bfdbfe;"><?= $delivered ?></td>
                     <td style="padding: 12px 15px; font-size: 14px; color: #334155; background: #dcfce7; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;"><?= $labor ?></td>
                     <td style="padding: 12px 15px; font-size: 14px; color: #334155; background: #dcfce7;"><?= $billed ?></td>
+                    <td style="padding: 12px 15px; text-align: center;">
+                        <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-warning btn-sm" style="background: #f59e0b; color: #ffffff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <i class="fa fa-edit"></i> Edit
+                        </a>
+                    </td>
                 </tr>
                 <?php endwhile; ?>
                 
                 <?php if (mysqli_num_rows($result) == 0): ?>
                 <tr>
-                    <td colspan="13" style="padding: 30px; text-align: center; color: #64748b; font-size: 15px;">
+                    <td colspan="14" style="padding: 30px; text-align: center; color: #64748b; font-size: 15px;">
                         No Job Cards Found.
                     </td>
                 </tr>
